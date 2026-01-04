@@ -1,0 +1,191 @@
+{
+  "common": {
+    "app_name": "SGMC",
+    "home": "الرئيسية",
+    "patients": "المرضى",
+    "statements": "الفواتير",
+    "settings": "الإعدادات",
+    "application": "التطبيق",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "loading": "جاري التحميل...",
+    "search": "بحث...",
+    "actions": "إجراءات",
+    "view_details": "عرض التفاصيل",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "id": "المعرف",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "date": "التاريخ",
+    "status": "الحالة",
+    "view_patient": "عرض المريض",
+    "payment_history": "سجل الدفع",
+    "add_payment": "إضافة دفعة",
+    "amount": "المبلغ",
+    "no_data": "لا توجد بيانات متاحة",
+    "update": "تحديث",
+    "add": "إضافة",
+    "are_you_sure": "هل أنت متأكد؟",
+    "cannot_be_undone": "هذا الإجراء لا يمكن التراجع عنه.",
+    "view": "عرض",
+    "error": "خطأ"
+  },
+  "home": {
+    "welcome": "مرحباً بكم في SGMC",
+    "description": "نظام إدارة المركز الطبي العام المتخصص. قم بإدارة المرضى والفواتير والسجلات المالية بكفاءة.",
+    "get_started": "ابدأ الآن",
+    "quick_stats": "نظرة عامة سريعة",
+    "total_patients": "إجمالي المرضى",
+    "active_statements": "الفواتير النشطة",
+    "recent_activity": "آخر النشاطات",
+    "patients_description": "إدارة سجلات المرضى، عرض السجلات التاريخية، وتحديث معلومات الاتصال.",
+    "statements_description": "تتبع الفواتير والمدفوعات والكشوف المالية لجميع الإجراءات."
+  },
+  "messages": {
+    "patient_added": "تم إضافة المريض بنجاح",
+    "patient_updated": "تم تحديث بيانات المريض بنجاح",
+    "statement_added": "تم إضافة الفاتورة بنجاح",
+    "statement_updated": "تم تحديث الفاتورة بنجاح",
+    "payment_added": "تم إضافة الدفعة بنجاح",
+    "payment_updated": "تم تحديث الدفعة بنجاح",
+    "payment_deleted": "تم حذف الدفعة بنجاح",
+    "session_added": "تم إضافة الجلسة بنجاح",
+    "session_updated": "تم تحديث الجلسة بنجاح",
+    "session_deleted": "تم حذف الجلسة بنجاح",
+    "patient_updated_failed": "فشل تحديث بيانات المريض",
+    "statement_updated_failed": "فشل تحديث الفاتورة",
+    "payment_updated_failed": "فشل تحديث الدفعة",
+    "payment_deleted_failed": "فشل حذف الدفعة",
+    "session_updated_failed": "فشل تحديث الجلسة",
+    "session_deleted_failed": "فشل حذف الجلسة"
+  },
+  "patients": {
+    "title": "المرضى",
+    "details_title": "تفاصيل المريض",
+    "add_new": "إضافة مريض جديد",
+    "save": "حفظ المريض",
+    "id": "المعرف",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "created_at": "تاريخ الإنشاء",
+    "updated_at": "تاريخ التحديث",
+    "loading": "جاري تحميل المرضى...",
+    "loading_details": "جاري تحميل تفاصيل المريض...",
+    "search_placeholder": "البحث عن المرضى...",
+    "not_found": "المريض غير موجود",
+    "info": "معلومات المريض",
+    "full_name": "الاسم الكامل",
+    "phone_number": "رقم الهاتف",
+    "member_since": "عضو منذ",
+    "form": {
+      "name_label": "اسم المريض",
+      "name_placeholder": "اسم المريض (مثلاً: مينا)",
+      "name_description": "يرجى إدخال اسم المريض الكامل.",
+      "phone_label": "هاتف المريض",
+      "phone_placeholder": "رقم هاتف المريض (مثلاً: +0123456789)",
+      "phone_description": "يرجى إدخال رقم هاتف المريض."
+    }
+  },
+  "statements": {
+    "title": "الفواتير",
+    "details_title": "تفاصيل الفاتورة",
+    "add_new": "إضافة فاتورة جديدة",
+    "create": "إنشاء فاتورة",
+    "id": "المعرف",
+    "patient": "المريض",
+    "statement_for": "فاتورة لـ {{name}}",
+    "status": {
+      "label": "الحالة",
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "partial": "مدفوع جزئياً",
+      "payment_due": "مستحق الدفع",
+      "overdue": "متأخر"
+    },
+    "total": "الإجمالي",
+    "paid": "المدفوع",
+    "remaining": "المتبقي",
+    "date": "التاريخ",
+    "loading": "جاري تحميل الفواتير...",
+    "loading_details": "جاري تحميل تفاصيل الفاتورة...",
+    "not_found": "الفاتورة غير موجودة",
+    "search_placeholder": "البحث باسم المريض أو هاتفه...",
+    "view_details": "عرض التفاصيل",
+    "filter_remaining": {
+      "label": "فلتر المتبقي",
+      "all": "الكل",
+      "positive": "مستحق (موجب)",
+      "negative": "مدفوع بالزيادة (سالب)"
+    },
+    "form": {
+      "total_placeholder": "أدخل المبلغ الإجمالي",
+      "total_description": "أدخل المبلغ الإجمالي لهذه الفاتورة بالعملة المحلية."
+    },
+    "sessions": {
+      "title": "الجلسات",
+      "add_session": "إضافة جلسة",
+      "add_new_session": "إضافة جلسة جديدة",
+      "edit_session": "تعديل الجلسة",
+      "delete_session": "حذف الجلسة",
+      "delete_session_confirm": "سيؤدي هذا إلى حذف الجلسة نهائياً.",
+      "no_sessions": "لم يتم العثور على جلسات.",
+      "procedure": "الإجراء",
+      "procedure_placeholder": "اسم الإجراء"
+    },
+    "payments": {
+      "title": "المدفوعات",
+      "add_payment": "إضافة دفعة",
+      "no_payments": "لم يتم تسجيل أي مدفوعات بعد.",
+      "form": {
+        "amount_label": "مبلغ الدفعة",
+        "amount_placeholder": "أدخل مبلغ الدفعة",
+        "amount_description": "أدخل المبلغ المدفوع بالعملة المحلية."
+      }
+    }
+  },
+  "financial": {
+    "summary": "الملخص المالي",
+    "total_statements": "إجمالي الفواتير",
+    "total_required": "إجمالي المطلوب",
+    "total_paid": "إجمالي المدفوع",
+    "total_remaining": "إجمالي المتبقي",
+    "overdue_statements": "الفواتير المتأخرة",
+    "payment_progress": "تقدم الدفع",
+    "complete": "مكتمل",
+    "all_statements_created": "جميع الفواتير التي تم إنشاؤها",
+    "total_amount_required": "إجمالي المبلغ المطلوب",
+    "total_amount_paid": "إجمالي المبلغ المدفوع",
+    "outstanding_amount": "المبلغ المستحق",
+    "require_attention": "تحتاج إلى اهتمام"
+  },
+  "tabs": {
+    "statements": "الفواتير",
+    "transactions": "المعاملات",
+    "notes": "ملاحظات",
+    "transaction_history": "سجل المعاملات",
+    "transaction_history_desc": "سجل المعاملات المفصل وسجلات الدفع",
+    "view_transaction_log": "عرض سجل المعاملات",
+    "patient_notes": "ملاحظات المريض",
+    "patient_notes_desc": "الملاحظات الطبية والمعلومات الإضافية",
+    "add_note": "إضافة ملاحظة"
+  },
+  "pagination": {
+    "selected": "تم اختيار {{count}} من أصل {{total}} صفوف.",
+    "rows_per_page": "صفوف في الصفحة",
+    "page_of": "صفحة {{current}} من أصل {{total}}",
+    "first": "الذهاب إلى الصفحة الأولى",
+    "previous": "الصفحة السابقة",
+    "next": "الصفحة التالية",
+    "last": "الذهاب إلى الصفحة الأخيرة"
+  },
+  "view": {
+    "view": "عرض",
+    "toggle_columns": "تبديل الأعمدة"
+  },
+  "language": {
+    "arabic": "العربية",
+    "english": "English",
+    "toggle": "تغيير اللغة"
+  }
+}

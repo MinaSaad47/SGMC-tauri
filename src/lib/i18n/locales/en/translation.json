@@ -1,0 +1,191 @@
+{
+  "common": {
+    "app_name": "SGMC",
+    "home": "Home",
+    "patients": "Patients",
+    "statements": "Statements",
+    "settings": "Settings",
+    "application": "Application",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "search": "Search...",
+    "actions": "Actions",
+    "view_details": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "id": "ID",
+    "name": "Name",
+    "phone": "Phone",
+    "date": "Date",
+    "status": "Status",
+    "view_patient": "View Patient",
+    "payment_history": "Payment History",
+    "add_payment": "Add Payment",
+    "amount": "Amount",
+    "no_data": "No data available",
+    "update": "Update",
+    "add": "Add",
+    "are_you_sure": "Are you sure?",
+    "cannot_be_undone": "This action cannot be undone.",
+    "view": "View",
+    "error": "Error"
+  },
+  "home": {
+    "welcome": "Welcome to SGMC",
+    "description": "Specialized General Medical Center Management System. Efficiently manage your patients, statements, and financial records.",
+    "get_started": "Get Started",
+    "quick_stats": "Quick Overview",
+    "total_patients": "Total Patients",
+    "active_statements": "Active Statements",
+    "recent_activity": "Recent Activity",
+    "patients_description": "Manage patient records, view histories, and update contact information.",
+    "statements_description": "Track billing, payments, and financial statements for all procedures."
+  },
+  "messages": {
+    "patient_added": "Patient added successfully",
+    "patient_updated": "Patient updated successfully",
+    "statement_added": "Statement added successfully",
+    "statement_updated": "Statement updated successfully",
+    "payment_added": "Payment added successfully",
+    "payment_updated": "Payment updated successfully",
+    "payment_deleted": "Payment deleted successfully",
+    "session_added": "Session added successfully",
+    "session_updated": "Session updated successfully",
+    "session_deleted": "Session deleted successfully",
+    "patient_updated_failed": "Failed to update patient",
+    "statement_updated_failed": "Failed to update statement",
+    "payment_updated_failed": "Failed to update payment",
+    "payment_deleted_failed": "Failed to delete payment",
+    "session_updated_failed": "Failed to update session",
+    "session_deleted_failed": "Failed to delete session"
+  },
+  "patients": {
+    "title": "Patients",
+    "details_title": "Patient Details",
+    "add_new": "Add New Patient",
+    "save": "Save Patient",
+    "id": "ID",
+    "name": "Name",
+    "phone": "Phone",
+    "created_at": "Created At",
+    "updated_at": "Updated At",
+    "loading": "Patients loading...",
+    "loading_details": "Loading patient details...",
+    "search_placeholder": "Search patients...",
+    "not_found": "Patient not found",
+    "info": "Patient Information",
+    "full_name": "Full Name",
+    "phone_number": "Phone Number",
+    "member_since": "Member Since",
+    "form": {
+      "name_label": "Patient Name",
+      "name_placeholder": "The name of the patient (e.g., Mina)",
+      "name_description": "Please enter the patient's full name.",
+      "phone_label": "Patient Phone",
+      "phone_placeholder": "The phone number of the patient (e.g., +0123456789)",
+      "phone_description": "Please enter the patient's phone number."
+    }
+  },
+  "statements": {
+    "title": "Statements",
+    "details_title": "Statement Details",
+    "add_new": "Add New Statement",
+    "create": "Create Statement",
+    "id": "ID",
+    "patient": "Patient",
+    "statement_for": "Statement for {{name}}",
+    "status": {
+      "label": "Status",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partial": "Partial",
+      "payment_due": "Payment Due",
+      "overdue": "Overdue"
+    },
+    "total": "Total",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "date": "Date",
+    "loading": "Statements loading...",
+    "loading_details": "Loading statement details...",
+    "not_found": "Statement not found",
+    "search_placeholder": "Search by patient name or phone...",
+    "view_details": "View Details",
+    "filter_remaining": {
+      "label": "Remaining Filter",
+      "all": "All",
+      "positive": "Due (Positive)",
+      "negative": "Overpaid (Negative)"
+    },
+    "form": {
+      "total_placeholder": "Enter the total amount",
+      "total_description": "Enter the total amount for this statement in your local currency."
+    },
+    "sessions": {
+      "title": "Sessions",
+      "add_session": "Add Session",
+      "add_new_session": "Add New Session",
+      "edit_session": "Edit Session",
+      "delete_session": "Delete Session",
+      "delete_session_confirm": "This will permanently delete the session.",
+      "no_sessions": "No sessions found.",
+      "procedure": "Procedure",
+      "procedure_placeholder": "Procedure name"
+    },
+    "payments": {
+      "title": "Payments",
+      "add_payment": "Add Payment",
+      "no_payments": "No payments recorded yet.",
+      "form": {
+        "amount_label": "Payment Amount",
+        "amount_placeholder": "Enter the payment amount",
+        "amount_description": "Enter the amount paid in your local currency."
+      }
+    }
+  },
+  "financial": {
+    "summary": "Financial Summary",
+    "total_statements": "Total Statements",
+    "total_required": "Total Required",
+    "total_paid": "Total Paid",
+    "total_remaining": "Total Remaining",
+    "overdue_statements": "Overdue Statements",
+    "payment_progress": "Payment Progress",
+    "complete": "Complete",
+    "all_statements_created": "All statements created",
+    "total_amount_required": "Total amount required",
+    "total_amount_paid": "Total amount paid",
+    "outstanding_amount": "Outstanding amount",
+    "require_attention": "require attention"
+  },
+  "tabs": {
+    "statements": "Statements",
+    "transactions": "Transactions",
+    "notes": "Notes",
+    "transaction_history": "Transaction History",
+    "transaction_history_desc": "Detailed transaction history and payment records",
+    "view_transaction_log": "View Transaction Log",
+    "patient_notes": "Patient Notes",
+    "patient_notes_desc": "Medical notes and additional information",
+    "add_note": "Add Note"
+  },
+  "pagination": {
+    "selected": "{{count}} of {{total}} row(s) selected.",
+    "rows_per_page": "Rows per page",
+    "page_of": "Page {{current}} of {{total}}",
+    "first": "Go to first page",
+    "previous": "Go to previous page",
+    "next": "Go to next page",
+    "last": "Go to last page"
+  },
+  "view": {
+    "view": "View",
+    "toggle_columns": "Toggle columns"
+  },
+  "language": {
+    "arabic": "العربية",
+    "english": "English",
+    "toggle": "Change Language"
+  }
+}
