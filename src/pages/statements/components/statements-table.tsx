@@ -14,15 +14,34 @@ import { useDebounce } from "@/lib/hooks";
 import {
   GetStatementsParams,
   getStatementsQueryOptions,
+  deleteStatementMutationOptions,
 } from "@/lib/tanstack-query/statements";
 import { Statement } from "@/lib/types/statements";
 import { cn, formatCurrency, formatDate, shortenUuid } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { StatusBadge } from "@/components/status-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { MoreHorizontal, Trash } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface StatementsTableProps {
   patientId?: string;
@@ -35,6 +54,9 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
   const [remainingFilter, setRemainingFilter] = useState<
     "all" | "positive" | "negative"
   >("all");
+  const [deletingStatement, setDeletingStatement] = useState<Statement | null>(
+    null,
+  );
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -52,6 +74,11 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
       }),
     ),
   );
+
+  const deleteMutation = useMutation({
+    ...deleteStatementMutationOptions(),
+    onSuccess: () => setDeletingStatement(null),
+  });
 
   const columns = useMemo(() => {
     const allColumns: ColumnDef<Statement>[] = [
@@ -125,6 +152,32 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
         header: t("statements.date"),
         cell: ({ row }) => formatDate(row.original.createdAt),
       },
+      {
+        id: "actions",
+        cell: ({ row }) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild>
+                <Link to={`/statements/${row.original.id}`}>
+                  {t("common.view_details")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-600 focus:text-red-600"
+                onClick={() => setDeletingStatement(row.original)}
+              >
+                <Trash className="me-2 h-4 w-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      },
     ];
 
     if (patientId) {
@@ -187,6 +240,37 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
           statementsQuery.data.pagingInfo.total / pagination.pageSize,
         )}
       />
+
+      <AlertDialog
+        open={!!deletingStatement}
+        onOpenChange={(open) => !open && setDeletingStatement(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.are_you_sure")}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>{t("common.cannot_be_undone")}</p>
+              <p className="font-bold text-red-600">
+                {t("statements.delete_warning")}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() =>
+                deletingStatement && deleteMutation.mutate(deletingStatement.id)
+              }
+            >
+              {deleteMutation.isPending && (
+                <Spinner className="me-2 text-white" />
+              )}
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -262,6 +262,30 @@ export function updateStatementMutationOptions() {
     },
   });
 }
+
+export function deleteStatementMutationOptions() {
+  return mutationOptions({
+    mutationFn: async (id: string) => {
+      const db = await getDb();
+
+      const queryResult = await db.execute(
+        "DELETE FROM statements WHERE id = ?",
+        [id],
+      );
+
+      if (queryResult.rowsAffected === 0) {
+        throw new Error(i18n.t("messages.statement_deleted_failed"));
+      }
+
+      return id;
+    },
+    meta: {
+      invalidatesQueries: [getStatementsQueryKey()],
+      successMessage: i18n.t("messages.statement_deleted"),
+    },
+  });
+}
+
 export function addPaymentMutationOptions() {
   return mutationOptions({
     mutationFn: async (addPayment: AddPaymentSchema) => {

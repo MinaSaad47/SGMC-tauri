@@ -26,10 +26,12 @@
     "no_data": "لا توجد بيانات متاحة",
     "update": "تحديث",
     "add": "إضافة",
+    "back": "عودة",
     "are_you_sure": "هل أنت متأكد؟",
     "cannot_be_undone": "هذا الإجراء لا يمكن التراجع عنه.",
     "view": "عرض",
-    "error": "خطأ"
+    "error": "خطأ",
+    "print": "طباعة"
   },
   "home": {
     "welcome": "مرحباً بكم في SGMC",
@@ -47,6 +49,7 @@
     "patient_updated": "تم تحديث بيانات المريض بنجاح",
     "statement_added": "تم إضافة الفاتورة بنجاح",
     "statement_updated": "تم تحديث الفاتورة بنجاح",
+    "statement_deleted": "تم حذف الفاتورة بنجاح",
     "payment_added": "تم إضافة الدفعة بنجاح",
     "payment_updated": "تم تحديث الدفعة بنجاح",
     "payment_deleted": "تم حذف الدفعة بنجاح",
@@ -55,6 +58,7 @@
     "session_deleted": "تم حذف الجلسة بنجاح",
     "patient_updated_failed": "فشل تحديث بيانات المريض",
     "statement_updated_failed": "فشل تحديث الفاتورة",
+    "statement_deleted_failed": "فشل حذف الفاتورة",
     "payment_updated_failed": "فشل تحديث الدفعة",
     "payment_deleted_failed": "فشل حذف الدفعة",
     "session_updated_failed": "فشل تحديث الجلسة",
@@ -112,6 +116,7 @@
     "not_found": "الفاتورة غير موجودة",
     "search_placeholder": "البحث باسم المريض أو هاتفه...",
     "view_details": "عرض التفاصيل",
+    "delete_warning": "تحذير: سيؤدي هذا الإجراء إلى حذف الفاتورة نهائيًا بما في ذلك جميع الجلسات وسجل المدفوعات المرتبط بها.",
     "filter_remaining": {
       "label": "فلتر المتبقي",
       "all": "الكل",

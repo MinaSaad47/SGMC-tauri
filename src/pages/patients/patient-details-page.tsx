@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Pencil, Calendar, Phone, Plus } from "lucide-react";
+import { Pencil, Calendar, Phone, Plus, } from "lucide-react";
 import { PatientDetailsForm } from "./components/patient-details-form";
 import { getPatientDetailsQueryOptions } from "@/lib/tanstack-query/patients";
 import { formatCurrency, formatDate } from "@/lib/utils";

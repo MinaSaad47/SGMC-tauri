@@ -26,10 +26,12 @@
     "no_data": "No data available",
     "update": "Update",
     "add": "Add",
+    "back": "Back",
     "are_you_sure": "Are you sure?",
     "cannot_be_undone": "This action cannot be undone.",
     "view": "View",
-    "error": "Error"
+    "error": "Error",
+    "print": "Print"
   },
   "home": {
     "welcome": "Welcome to SGMC",
@@ -47,6 +49,7 @@
     "patient_updated": "Patient updated successfully",
     "statement_added": "Statement added successfully",
     "statement_updated": "Statement updated successfully",
+    "statement_deleted": "Statement deleted successfully",
     "payment_added": "Payment added successfully",
     "payment_updated": "Payment updated successfully",
     "payment_deleted": "Payment deleted successfully",
@@ -55,6 +58,7 @@
     "session_deleted": "Session deleted successfully",
     "patient_updated_failed": "Failed to update patient",
     "statement_updated_failed": "Failed to update statement",
+    "statement_deleted_failed": "Failed to delete statement",
     "payment_updated_failed": "Failed to update payment",
     "payment_deleted_failed": "Failed to delete payment",
     "session_updated_failed": "Failed to update session",
@@ -112,6 +116,7 @@
     "not_found": "Statement not found",
     "search_placeholder": "Search by patient name or phone...",
     "view_details": "View Details",
+    "delete_warning": "WARNING: This will permanently delete the statement including ALL associated sessions and payments history.",
     "filter_remaining": {
       "label": "Remaining Filter",
       "all": "All",

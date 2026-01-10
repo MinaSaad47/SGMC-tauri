@@ -36,7 +36,7 @@ fn db_migrations() -> Vec<Migration> {
                 amount INTEGER NOT NULL,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
-                FOREIGN KEY(statement_id) REFERENCES statements(id)
+                FOREIGN KEY(statement_id) REFERENCES statements(id) ON DELETE CASCADE
             );
             CREATE INDEX IF NOT EXISTS idx_payments_statement_id ON payments (statement_id);
 
@@ -46,7 +46,7 @@ fn db_migrations() -> Vec<Migration> {
                 procedure TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
-                FOREIGN KEY(statement_id) REFERENCES statements(id)
+                FOREIGN KEY(statement_id) REFERENCES statements(id) ON DELETE CASCADE
             );
             CREATE INDEX IF NOT EXISTS idx_sessions_statement_id ON sessions (statement_id);
         "#,

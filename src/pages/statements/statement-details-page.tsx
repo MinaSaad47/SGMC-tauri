@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getStatementDetailsQueryOptions } from "@/lib/tanstack-query/statements";
@@ -7,9 +7,11 @@ import { ErrorMessage } from "@/components/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, User, Phone, Pencil } from "lucide-react";
+import { Plus, User, Phone, Pencil, Printer } from "lucide-react";
 import { NewPaymentForm } from "./components/new-payment-form";
 import { UpdateStatementForm } from "./components/update-statement-form";
+import { PrintableStatement } from "./components/printable-statement";
+import { useReactToPrint } from "react-to-print";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +29,15 @@ function StatementDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isEditTotalOpen, setIsEditTotalOpen] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
   const statementDetails = useQuery(getStatementDetailsQueryOptions(id!));
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Statement-${id}`,
+  });
 
   if (statementDetails.isPending) {
     return <LoadingMessage message={t("statements.loading_details")} />;
@@ -59,12 +69,49 @@ function StatementDetailsPage() {
             <span>
               {t("statements.statement_for", { name: statement.patient.name })}
             </span>
-            <Link to={`/patients/${statement.patient.id}`}>
-              <Button variant="outline" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                {t("common.view_patient")}
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Dialog
+                open={isPrintPreviewOpen}
+                onOpenChange={setIsPrintPreviewOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Printer className="h-4 w-4" />
+                    {t("common.print")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="min-w-[90vw] h-[90vh] flex flex-col p-0 gap-0">
+                  <DialogHeader className="p-6 pb-2 shrink-0">
+                    <DialogTitle>
+                      {t("common.print")} {t("statements.details_title")}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="flex-1 overflow-auto bg-gray-100 p-8 flex justify-center">
+                    <div className="shadow-lg origin-top scale-[0.6] sm:scale-[0.7] md:scale-[0.8]">
+                      <PrintableStatement
+                        ref={printRef}
+                        statement={statement}
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4 border-t flex justify-end shrink-0 bg-background">
+                    <Button
+                      onClick={() => handlePrint()}
+                      className="w-full sm:w-auto"
+                    >
+                      <Printer className="me-2 h-4 w-4" />
+                      {t("common.print")}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Link to={`/patients/${statement.patient.id}`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  {t("common.view_patient")}
+                </Button>
+              </Link>
+            </div>
           </CardTitle>
           <div className="flex items-center gap-2 pt-2">
             <Phone className="h-4 w-4 text-muted-foreground" />

@@ -2,11 +2,26 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users, FileText, ArrowRight } from "lucide-react";
+import { Users, FileText, ArrowRight, Database } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { seedDatabase } from "@/lib/seed";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function HomePage() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
+  const handleSeed = async () => {
+    try {
+      await seedDatabase();
+      await queryClient.invalidateQueries();
+      toast.success("Database seeded successfully");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to seed database");
+    }
+  };
 
   return (
     <div className="container mx-auto py-12 px-4 space-y-8">
@@ -24,6 +39,11 @@ export default function HomePage() {
               {t("home.get_started")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </Link>
+          {import.meta.env.DEV && (
+            <Button size="lg" variant="outline" className="gap-2" onClick={handleSeed}>
+              <Database className="h-4 w-4" /> Seed Data (Dev Only)
+            </Button>
+          )}
         </div>
       </div>
 

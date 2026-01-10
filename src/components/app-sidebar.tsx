@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "./language-toggle";
 import logo from "@/assets/logo.svg";
+import { BackButton } from "./back-button";
 
 export function AppSidebar() {
   const { t } = useTranslation();
@@ -50,6 +51,9 @@ export function AppSidebar() {
         <span className="font-bold text-lg tracking-tight">{t("common.app_name")}</span>
       </SidebarHeader>
       <SidebarContent>
+        <div className="px-2 pt-2">
+          <BackButton />
+        </div>
         <SidebarGroup>
           <SidebarGroupLabel>{t("common.application")}</SidebarGroupLabel>
           <SidebarGroupContent>
