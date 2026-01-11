@@ -16,11 +16,26 @@ Database state and synchronization are managed using TanStack Query. It interact
 ## Tech Stack
 
 - Framework: Tauri v2
+
 - Frontend: React 19, TypeScript
+
 - State Management: TanStack Query v5
+
 - Database: SQLite (Tauri SQL Plugin)
+
 - Styling: Tailwind CSS v4
+
 - Localization: i18next (English & Arabic RTL support)
+
+## Linux Compatibility (Wayland)
+
+There is a known limitation with WebKitGTK when running on Wayland. To ensure the application runs correctly on Linux distributions using Wayland, a workaround has been implemented in `src-tauri/src/main.rs`.
+
+The application detects the Wayland environment and automatically restarts itself with the following environment variables:
+
+- `GDK_BACKEND=x11`
+
+- `WEBKIT_DISABLE_COMPOSITING_MODE=1`
 
 ## Build and Development
 
