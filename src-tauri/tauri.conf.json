@@ -31,10 +31,20 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "windows": {
-      "webviewInstallMode": {
-        "type": "embedBootstrapper"
+        "windows": {
+          "webviewInstallMode": {
+            "type": "embedBootstrapper"
+          }
+        }
+      },
+      "plugins": {
+        "deep-link": {
+          "desktop": {
+            "schemes": [
+              "sgmc"
+            ]
+          }
+        }
       }
     }
-  }
-}
+    

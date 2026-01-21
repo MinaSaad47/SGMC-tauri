@@ -10,6 +10,11 @@
     "opener:default",
     "sql:default",
     "sql:allow-execute",
-    "log:default"
+    "log:default",
+    "fs:default",
+    "deep-link:default",
+    "process:default",
+    "store:default",
+    "http:default"
   ]
 }

@@ -53,10 +53,14 @@ fn db_migrations() -> Vec<Migration> {
     }]
 }
 
-pub static DB_URL: LazyLock<String> = LazyLock::new(|| {
-    let db = filesystem::DATA_DIR.join("database.db");
-    format!("sqlite:{}", db.display())
+pub static DB_PATH: LazyLock<String> = LazyLock::new(|| {
+    filesystem::DATA_DIR
+        .join("database.db")
+        .display()
+        .to_string()
 });
+
+pub static DB_URL: LazyLock<String> = LazyLock::new(|| format!("sqlite:{}", *DB_PATH));
 
 pub fn get_db_plugin<R>() -> TauriPlugin<R, Option<tauri_plugin_sql::PluginConfig>>
 where

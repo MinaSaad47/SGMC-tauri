@@ -1,22 +1,23 @@
 import { Home, Inbox, Settings, Users } from "lucide-react";
 
-import {
+import logo from "@/assets/logo.svg";
+import
+{
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LanguageToggle } from "./language-toggle";
-import logo from "@/assets/logo.svg";
+import { Link } from "react-router-dom";
 import { BackButton } from "./back-button";
+import { LanguageToggle } from "./language-toggle";
 
 export function AppSidebar() {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export function AppSidebar() {
     },
     {
       title: t("common.settings"),
-      url: "#", // Assuming Settings doesn't have a specific page yet
+      url: "/settings", 
       icon: Settings,
     },
   ];
