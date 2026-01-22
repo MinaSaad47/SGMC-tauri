@@ -6,7 +6,7 @@ let db: Database | undefined;
 
 export async function getDb() {
   if (!db) {
-    const url = await invoke<string>("db_url");
+    const url = await invoke<string>("get_db_url");
     info(`Loading database from ${url}`);
     db = await Database.load(url);
     info("Database loaded");

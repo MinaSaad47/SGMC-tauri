@@ -31,7 +31,8 @@
     "cannot_be_undone": "This action cannot be undone.",
     "view": "View",
     "error": "Error",
-    "print": "Print"
+    "print": "Print",
+    "file": "File"
   },
   "home": {
     "welcome": "Welcome to SGMC",
@@ -43,6 +44,38 @@
     "recent_activity": "Recent Activity",
     "patients_description": "Manage patient records, view histories, and update contact information.",
     "statements_description": "Track billing, payments, and financial statements for all procedures."
+  },
+  "sync": {
+    "syncing": "Syncing Data...",
+    "do_not_close": "Please do not close the application.",
+    "offline_error": "Cannot sync while offline.",
+    "success": "Sync completed successfully.",
+    "failed": "Sync failed.",
+    "auto_sync_label": "Enable Auto-Sync ({{minutes}}min)",
+    "last_synced": "Last Synced",
+    "online": "Online",
+    "offline": "Offline",
+    "sync_now": "Sync Now",
+    "cloud_backups": "Cloud Backups",
+    "available_backups": "Available Backups",
+    "no_backups": "No backups found.",
+    "restore": "Restore",
+    "restoring": "Restoring database...",
+    "restore_success": "Database restored! Restarting...",
+    "restore_failed": "Failed to restore database.",
+    "restore_confirm_title": "Restore Database?",
+    "restore_confirm_desc": "This will overwrite your current data with the backup from {{date}}. The app will restart.",
+    "restore_confirm_action": "Restore & Restart",
+    "cloud_description": "Securely back up your data to your private Google Drive space.",
+    "connect_description": "Connect your Google account to enable cloud backups. Your data stays in your Drive in a folder named \"SGMC Backups\".",
+    "connect_button": "Connect Google Drive",
+    "connected_status": "Connected to Google Drive",
+    "disconnect_button": "Disconnect",
+    "waiting_for_login": "Waiting for Google login...",
+    "fetching_history": "Fetching backup history...",
+    "app_version": "App v{{version}}",
+    "patients_count": "{{count}} Patients",
+    "active_backup": "Active"
   },
   "messages": {
     "patient_added": "Patient added successfully",

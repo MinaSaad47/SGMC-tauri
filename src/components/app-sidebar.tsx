@@ -1,25 +1,29 @@
-import { Home, Inbox, Settings, Users } from "lucide-react";
+import { Home, Inbox, Settings, Users, Wifi, WifiOff, RefreshCw } from "lucide-react";
 
-import {
+import logo from "@/assets/logo.svg";
+import
+{
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LanguageToggle } from "./language-toggle";
-import logo from "@/assets/logo.svg";
+import { Link } from "react-router-dom";
 import { BackButton } from "./back-button";
+import { LanguageToggle } from "./language-toggle";
+import { useSyncStore } from "@/lib/sync-store";
+import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
   const { t } = useTranslation();
+  const { isOnline, isAutoSyncEnabled, isSyncing } = useSyncStore();
 
   const items = [
     {
@@ -39,7 +43,7 @@ export function AppSidebar() {
     },
     {
       title: t("common.settings"),
-      url: "#", // Assuming Settings doesn't have a specific page yet
+      url: "/settings", 
       icon: Settings,
     },
   ];
@@ -72,9 +76,23 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 flex flex-row items-center justify-between">
-        <span className="text-xs text-muted-foreground">v0.1.0</span>
-        <LanguageToggle />
+      <SidebarFooter className="p-4 flex flex-col gap-4">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <div className={cn("p-1.5 rounded-md transition-colors", isOnline ? "text-green-500 bg-green-500/10" : "text-destructive bg-destructive/10")}>
+              {isOnline ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            </div>
+            {isAutoSyncEnabled && (
+              <div className={cn("p-1.5 rounded-md text-primary bg-primary/10", isSyncing && "animate-pulse")}>
+                <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+              </div>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">v0.1.0</span>
+        </div>
+        <div className="flex justify-end">
+          <LanguageToggle />
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
