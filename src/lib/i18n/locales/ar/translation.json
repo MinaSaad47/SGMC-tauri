@@ -31,7 +31,8 @@
     "cannot_be_undone": "هذا الإجراء لا يمكن التراجع عنه.",
     "view": "عرض",
     "error": "خطأ",
-    "print": "طباعة"
+    "print": "طباعة",
+    "file": "ملف"
   },
   "home": {
     "welcome": "مرحباً بكم في SGMC",
@@ -43,6 +44,38 @@
     "recent_activity": "آخر النشاطات",
     "patients_description": "إدارة سجلات المرضى، عرض السجلات التاريخية، وتحديث معلومات الاتصال.",
     "statements_description": "تتبع الفواتير والمدفوعات والكشوف المالية لجميع الإجراءات."
+  },
+  "sync": {
+    "syncing": "جاري مزامنة البيانات...",
+    "do_not_close": "يرجى عدم إغلاق التطبيق.",
+    "offline_error": "لا يمكن المزامنة دون اتصال بالإنترنت.",
+    "success": "تمت المزامنة بنجاح.",
+    "failed": "فشلت المزامنة.",
+    "auto_sync_label": "تفعيل المزامنة التلقائية ({{minutes}} دقيقة)",
+    "last_synced": "آخر مزامنة",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "sync_now": "مزامنة الآن",
+    "cloud_backups": "النسخ الاحتياطية السحابية",
+    "available_backups": "النسخ الاحتياطية المتاحة",
+    "no_backups": "لا توجد نسخ احتياطية.",
+    "restore": "استعادة",
+    "restoring": "جاري استعادة قاعدة البيانات...",
+    "restore_success": "تمت الاستعادة! جاري إعادة التشغيل...",
+    "restore_failed": "فشل استعادة قاعدة البيانات.",
+    "restore_confirm_title": "استعادة قاعدة البيانات؟",
+    "restore_confirm_desc": "سيتم استبدال بياناتك الحالية بالنسخة الاحتياطية من {{date}}. سيتم إعادة تشغيل التطبيق.",
+    "restore_confirm_action": "استعادة وإعادة تشغيل",
+    "cloud_description": "نسخ بياناتك احتياطياً بشكل آمن إلى مساحتك الخاصة في Google Drive.",
+    "connect_description": "قم بربط حساب Google الخاص بك لتفعيل النسخ الاحتياطي السحابي. تبقى بياناتك في Google Drive الخاص بك في مجلد يسمى \"SGMC Backups\".",
+    "connect_button": "ربط Google Drive",
+    "connected_status": "متصل بـ Google Drive",
+    "disconnect_button": "إلغاء الربط",
+    "waiting_for_login": "بانتظار تسجيل الدخول من Google...",
+    "fetching_history": "جاري جلب سجل النسخ الاحتياطية...",
+    "app_version": "تطبيق v{{version}}",
+    "patients_count": "{{count}} مريض",
+    "active_backup": "نشط"
   },
   "messages": {
     "patient_added": "تم إضافة المريض بنجاح",

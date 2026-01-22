@@ -1,12 +1,17 @@
+import { invoke } from "@tauri-apps/api/core";
 import { join, tempDir } from "@tauri-apps/api/path";
 import { readFile, remove } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { Store } from "@tauri-apps/plugin-store";
+import { getVersion } from "@tauri-apps/api/app";
 import { getDb } from "./db";
 
-// Placeholder for Client ID - You will need to replace this
-const CLIENT_ID = "588153825793-rbj4mjgeghq52jsjpm624rpt0mgv9lj2.apps.googleusercontent.com";
-const REDIRECT_URI = "sgmc://auth/callback";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "";
+const REDIRECT_PORT = 14200;
+
+const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}`;
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -19,6 +24,54 @@ export interface BackupFile
   id: string;
   name: string;
   createdTime: string;
+  properties?: {
+    appVersion?: string;
+    patientCount?: string;
+  };
+}
+
+// PKCE Helper Functions
+async function generateCodeVerifier()
+{
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return base64UrlEncode(array);
+}
+
+async function generateCodeChallenge(verifier: string)
+{
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function base64UrlEncode(array: Uint8Array)
+{
+  let str = "";
+  for (let i = 0; i < array.length; i++)
+  {
+    str += String.fromCharCode(array[i]);
+  }
+  return btoa(str)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// Compression Helpers
+async function compressData(data: Uint8Array): Promise<Uint8Array>
+{
+  // @ts-ignore - CompressionStream might not be in all TS libs yet
+  const stream = new Blob([data]).stream().pipeThrough(new CompressionStream("gzip"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function decompressData(data: Uint8Array): Promise<Uint8Array>
+{
+  // @ts-ignore - DecompressionStream might not be in all TS libs yet
+  const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
 class GoogleDriveClient
@@ -34,8 +87,21 @@ class GoogleDriveClient
     return this._store;
   }
 
-  async getAuthUrl(): Promise<string>
+  async authenticate(): Promise<void>
   {
+    // 1. Generate PKCE Verifier and Challenge
+    const codeVerifier = await generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+    // Store verifier temporarily
+    const store = await this.getStore();
+    await store.set("pkce_verifier", codeVerifier);
+    await store.save();
+
+    // 2. Start the local server listener
+    const codePromise = invoke<string>("start_oauth_server", { port: REDIRECT_PORT });
+
+    // 3. Open the browser to Google's Auth URL with PKCE params
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: REDIRECT_URI,
@@ -43,17 +109,37 @@ class GoogleDriveClient
       scope: SCOPES,
       access_type: "offline",
       prompt: "consent",
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
-    return `${AUTH_ENDPOINT}?${params.toString()}`;
+
+    await openUrl(`${AUTH_ENDPOINT}?${params.toString()}`);
+
+    // 4. Wait for the code
+    const code = await codePromise;
+
+    // 5. Exchange code for tokens using verifier
+    await this.exchangeCodeForToken(code, codeVerifier);
   }
 
-  async exchangeCodeForToken(code: string): Promise<void>
+  async exchangeCodeForToken(code: string, verifier?: string): Promise<void>
   {
+    const store = await this.getStore();
+    // Retrieve verifier from store if not passed
+    const codeVerifier = verifier || await store.get<string>("pkce_verifier");
+
+    if (!codeVerifier)
+    {
+      throw new Error("PKCE code verifier missing");
+    }
+
     const body = new URLSearchParams({
       code: code,
       client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
       redirect_uri: REDIRECT_URI,
       grant_type: "authorization_code",
+      code_verifier: codeVerifier,
     });
 
     const response = await fetch(TOKEN_ENDPOINT, {
@@ -69,7 +155,6 @@ class GoogleDriveClient
     }
 
     const data = await response.json();
-    const store = await this.getStore();
 
     await store.set("access_token", data.access_token);
     if (data.refresh_token)
@@ -77,6 +162,8 @@ class GoogleDriveClient
       await store.set("refresh_token", data.refresh_token);
     }
     await store.set("token_expiry", Date.now() + (data.expires_in * 1000));
+    // Clean up verifier
+    await store.delete("pkce_verifier");
     await store.save();
   }
 
@@ -102,6 +189,7 @@ class GoogleDriveClient
 
     const body = new URLSearchParams({
       client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
       grant_type: "refresh_token",
       refresh_token: refreshToken,
     });
@@ -174,33 +262,47 @@ class GoogleDriveClient
     return folder.id;
   }
 
-  async uploadBackup(): Promise<void>
+  async uploadBackup(): Promise<string>
   {
     const token = await this.getAccessToken();
     const folderId = await this.getOrCreateFolder();
 
     const db = await getDb();
-    const tempName = `sgmc_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.db`;
+    const tempName = `sgmc_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.db.gz`;
 
-    // Get SYSTEM temp dir as requested
+    // Fetch Metadata
+    const version = await getVersion();
+    const patientCountResult = await db.select<any[]>("SELECT COUNT(*) as count FROM patients");
+    const patientCount = patientCountResult?.[0]?.count?.toString() || "0";
+
+    // Get SYSTEM temp dir
     const tempDirectory = await tempDir();
-    const tempPath = await join(tempDirectory, tempName);
+    const uniqueId = crypto.randomUUID().replace(/-/g, "");
+    const tempDbPath = await join(tempDirectory, `temp_snapshot_${uniqueId}.db`);
 
     // Create snapshot using VACUUM INTO
-    await db.execute(`VACUUM INTO '${tempPath}'`);
+    // Ensure path is absolute and correctly formatted for SQLite
+    await db.execute(`VACUUM INTO '${tempDbPath}'`);
 
     try
     {
-      const fileData = await readFile(tempPath);
+      const fileData = await readFile(tempDbPath);
+      // Compress the data
+      const compressedData = await compressData(fileData);
 
       const metadata = {
         name: tempName,
         parents: [folderId],
+        properties: {
+          appVersion: version,
+          patientCount: patientCount,
+        }
       };
 
       const formData = new FormData();
       formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-      formData.append("file", new Blob([fileData], { type: "application/octet-stream" }));
+      // @ts-ignore - FormData.append might not be in all TS libs yet
+      formData.append("file", new Blob([compressedData], { type: "application/octet-stream" }));
 
       const uploadResponse = await fetch(`${UPLOAD_API_URL}?uploadType=multipart`, {
         method: "POST",
@@ -212,10 +314,13 @@ class GoogleDriveClient
       {
         throw new Error("Drive upload failed");
       }
+
+      const data = await uploadResponse.json();
+      return data.id;
     } finally
     {
       // Clean up temp file
-      await remove(tempPath);
+      await remove(tempDbPath);
     }
   }
 
@@ -225,7 +330,7 @@ class GoogleDriveClient
     const folderId = await this.getOrCreateFolder();
     const query = new URLSearchParams({
       q: `'${folderId}' in parents and trashed = false`,
-      fields: "files(id, name, createdTime)",
+      fields: "files(id, name, createdTime, properties)",
       orderBy: "createdTime desc",
     });
 
@@ -239,12 +344,27 @@ class GoogleDriveClient
   async downloadBackup(fileId: string): Promise<Uint8Array>
   {
     const token = await this.getAccessToken();
+
+    // First get metadata to check filename for .gz extension
+    const metaResponse = await fetch(`${DRIVE_API_URL}/${fileId}?fields=name`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const meta = await metaResponse.json();
+    const isCompressed = meta.name?.endsWith(".gz");
+
     const response = await fetch(`${DRIVE_API_URL}/${fileId}?alt=media`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) throw new Error("Download failed");
-    return new Uint8Array(await response.arrayBuffer());
+
+    const data = new Uint8Array(await response.arrayBuffer());
+
+    if (isCompressed)
+    {
+      return await decompressData(data);
+    }
+    return data;
   }
 }
 

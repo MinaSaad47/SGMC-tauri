@@ -1,12 +1,13 @@
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Users, FileText, ArrowRight, Database } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { seedDatabase } from "@/lib/seed";
-import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { error } from "@tauri-apps/plugin-log";
+import { ArrowRight, Database, FileText, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -17,8 +18,9 @@ export default function HomePage() {
       await seedDatabase();
       await queryClient.invalidateQueries();
       toast.success("Database seeded successfully");
-    } catch (e) {
-      console.error(e);
+    } catch (e: any)
+    {
+      error(e);
       toast.error("Failed to seed database");
     }
   };

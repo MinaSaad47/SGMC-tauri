@@ -1,3 +1,4 @@
+import { info } from "@tauri-apps/plugin-log";
 import { v7 as uuid } from "uuid";
 import { getDb } from "./db";
 
@@ -23,7 +24,7 @@ const PROCEDURES = [
 
 export async function seedDatabase() {
   const db = await getDb();
-  console.log("Seeding database...");
+  info("Seeding database...");
 
   // 1. Create Patients
   const patientIds: string[] = [];
@@ -57,7 +58,7 @@ export async function seedDatabase() {
     await createFullStatement(db, patientId, 100000000, 5000000, 5); // 1,000,000.00 total
   }
 
-  console.log("Database seeded successfully!");
+  info("Database seeded successfully!");
 }
 
 async function createFullStatement(

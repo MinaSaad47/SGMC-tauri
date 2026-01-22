@@ -12,9 +12,76 @@
     "sql:allow-execute",
     "log:default",
     "fs:default",
+{
+  "identifier": "fs:allow-rename",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
+{
+  "identifier": "fs:allow-remove",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
+{
+  "identifier": "fs:allow-read-file",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
+{
+  "identifier": "fs:allow-write-file",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
+{
+  "identifier": "fs:read-dirs",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
+{
+  "identifier": "fs:allow-create",
+  "allow": [
+    {
+      "path": "**"
+    }
+  ]
+},
     "deep-link:default",
     "process:default",
     "store:default",
-    "http:default"
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://localhost:*"
+        },
+        {
+          "url": "https://accounts.google.com/o/oauth2/v2/auth"
+        },
+        {
+          "url": "https://oauth2.googleapis.com/token*"
+        },
+        {
+          "url": "https://www.googleapis.com/drive/v3/files*"
+        },
+        {
+          "url": "https://www.googleapis.com/upload/drive/v3/files*"
+        }
+      ]
+    }
   ]
 }
