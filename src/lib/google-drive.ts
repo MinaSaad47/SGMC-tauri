@@ -324,21 +324,37 @@ class GoogleDriveClient
     }
   }
 
-  async listBackups(): Promise<BackupFile[]>
+  async listBackups(pageToken?: string, pageSize: number = 10): Promise<{ files: BackupFile[], nextPageToken?: string }>
   {
     const token = await this.getAccessToken();
     const folderId = await this.getOrCreateFolder();
-    const query = new URLSearchParams({
+    
+    const params: Record<string, string> = {
       q: `'${folderId}' in parents and trashed = false`,
-      fields: "files(id, name, createdTime, properties)",
+      fields: "nextPageToken, files(id, name, createdTime, properties)",
       orderBy: "createdTime desc",
-    });
+      pageSize: pageSize.toString(),
+    };
+
+    if (pageToken) {
+      params.pageToken = pageToken;
+    }
+
+    const query = new URLSearchParams(params);
 
     const response = await fetch(`${DRIVE_API_URL}?${query.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    
+    if (!response.ok) {
+        throw new Error("Failed to list backups");
+    }
+
     const data = await response.json();
-    return data.files || [];
+    return { 
+        files: data.files || [], 
+        nextPageToken: data.nextPageToken 
+    };
   }
 
   async downloadBackup(fileId: string): Promise<Uint8Array>

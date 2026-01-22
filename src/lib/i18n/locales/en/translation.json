@@ -32,7 +32,8 @@
     "view": "View",
     "error": "Error",
     "print": "Print",
-    "file": "File"
+    "file": "File",
+    "load_more": "Load More"
   },
   "home": {
     "welcome": "Welcome to SGMC",
