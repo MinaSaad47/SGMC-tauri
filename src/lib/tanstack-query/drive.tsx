@@ -1,4 +1,4 @@
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { mutationOptions, infiniteQueryOptions } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 import { rename, writeFile } from "@tauri-apps/plugin-fs";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -12,14 +12,16 @@ export function getBackupsQueryKey()
   return ["drive", "backups"] as const;
 }
 
-export function getBackupsQueryOptions(enabled: boolean = true)
+export function getBackupsInfiniteQueryOptions(enabled: boolean = true)
 {
-  return queryOptions({
+  return infiniteQueryOptions({
     queryKey: getBackupsQueryKey(),
-    queryFn: async () =>
+    queryFn: async ({ pageParam }: { pageParam?: string }) =>
     {
-      return await googleDrive.listBackups();
+      return await googleDrive.listBackups(pageParam);
     },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextPageToken,
     enabled,
   });
 }

@@ -32,7 +32,8 @@
     "view": "عرض",
     "error": "خطأ",
     "print": "طباعة",
-    "file": "ملف"
+    "file": "ملف",
+    "load_more": "تحميل المزيد"
   },
   "home": {
     "welcome": "مرحباً بكم في SGMC",

@@ -16,15 +16,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAutoSync } from "@/hooks/use-auto-sync";
 import { useSyncStore } from "@/lib/sync-store";
-import
-{
-  getBackupsQueryOptions,
+import {
+  getBackupsInfiniteQueryOptions,
   restoreBackupMutationOptions,
   uploadBackupMutationOptions,
 } from "@/lib/tanstack-query/drive";
 import { cn, formatDate } from "@/lib/utils";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Clock, Cloud, Download, Loader2, RefreshCw, Upload, Wifi, WifiOff } from "lucide-react";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { Check, Clock, Cloud, Download, Loader2, RefreshCw, Upload, Wifi, WifiOff, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function SyncManager()
@@ -33,7 +32,7 @@ export function SyncManager()
   const { isAutoSyncEnabled, toggleAutoSync, lastSyncTime, isSyncing, isOnline, setIsSyncing, setLastSyncTime, lastSyncedFileId } = useSyncStore();
   const { syncIntervalMinutes } = useAutoSync();
 
-  const backupsQuery = useQuery(getBackupsQueryOptions(isOnline));
+  const backupsQuery = useInfiniteQuery(getBackupsInfiniteQueryOptions(isOnline));
 
   const restoreMutation = useMutation({
     ...restoreBackupMutationOptions(),
@@ -56,11 +55,12 @@ export function SyncManager()
     restoreMutation.mutate(fileId);
   };
 
-  const backups = backupsQuery.data || [];
-  const isFetchingBackups = backupsQuery.isFetching;
+  const backups = backupsQuery.data?.pages.flatMap((page) => page.files) || [];
+  const isFetchingBackups = backupsQuery.isFetching && !backupsQuery.isFetchingNextPage;
 
   return (
     <div className="space-y-6">
+
       {/* ... Sync Controls ... */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-muted/30 p-4 rounded-lg border">
         <div className="flex flex-wrap items-center gap-6">
@@ -190,6 +190,25 @@ export function SyncManager()
                   </div>
                 );
               })
+            )}
+            
+            {backupsQuery.hasNextPage && (
+              <div className="p-2 text-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => backupsQuery.fetchNextPage()} 
+                  disabled={backupsQuery.isFetchingNextPage}
+                  className="w-full text-xs text-muted-foreground"
+                >
+                  {backupsQuery.isFetchingNextPage ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 mr-2" />
+                  )}
+                  {t("common.load_more")}
+                </Button>
+              </div>
             )}
           </div>
         </div>
