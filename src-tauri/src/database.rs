@@ -70,3 +70,15 @@ where
         .add_migrations(&DB_URL, db_migrations())
         .build()
 }
+
+/// Tauri command to get the database URL
+#[tauri::command]
+pub fn get_db_url() -> String {
+    DB_URL.clone()
+}
+
+/// Tauri command to get the database path
+#[tauri::command]
+pub fn get_db_path() -> String {
+    DB_PATH.clone()
+}

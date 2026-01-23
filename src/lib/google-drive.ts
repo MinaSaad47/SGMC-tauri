@@ -1,14 +1,15 @@
+import { env } from "./config/env";
+import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { join, tempDir } from "@tauri-apps/api/path";
 import { readFile, remove } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Store } from "@tauri-apps/plugin-store";
-import { getVersion } from "@tauri-apps/api/app";
 import { getDb } from "./db";
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "";
+const CLIENT_ID = env.VITE_GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = env.VITE_GOOGLE_CLIENT_SECRET;
 const REDIRECT_PORT = 14200;
 
 const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}`;

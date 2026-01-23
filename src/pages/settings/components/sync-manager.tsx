@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useAutoSync } from "@/hooks/use-auto-sync";
+import { useAutoSync } from "@/lib/hooks/use-auto-sync";
 import { useSyncStore } from "@/lib/sync-store";
 import {
   getBackupsInfiniteQueryOptions,

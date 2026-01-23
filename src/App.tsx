@@ -9,12 +9,12 @@ import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/layout";
 import { SyncOverlay } from "./components/sync-overlay";
-import { useAutoSync } from "./hooks/use-auto-sync";
+import { useAutoSync } from "@/lib/hooks/use-auto-sync";
 import HomePage from "./pages/home-page";
 import NewStatementForPatientPage from "./pages/patients/new-statement-for-patient-page";
 import PatientDetailsPage from "./pages/patients/patient-details-page";
 import SettingsPage from "./pages/settings-page";
-import { useGlobalOnlineStatus } from "./hooks/use-global-online-status";
+import { useGlobalOnlineStatus } from "@/lib/hooks/use-global-online-status";
 
 function App() {
   useAutoSync();
