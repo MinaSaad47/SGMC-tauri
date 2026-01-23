@@ -3,23 +3,23 @@ use std::net::TcpListener;
 use std::time::Duration;
 
 /// Starts a local OAuth server to handle authorization code callbacks.
-/// 
+///
 /// This server listens on localhost at the specified port and waits for an OAuth
 /// redirect containing the authorization code. Once received, it sends a success
 /// page to the browser and returns the code to the application.
-/// 
+///
 /// # Arguments
 /// * `port` - The port number to bind the server to
 /// * `timeout_seconds` - Optional timeout in seconds (defaults to 300 seconds / 5 minutes)
 #[tauri::command]
 pub async fn start_oauth_server(port: u16, timeout_seconds: Option<u64>) -> Result<String, String> {
     let timeout = Duration::from_secs(timeout_seconds.unwrap_or(300));
-    
+
     // Use tokio::time::timeout to wrap the entire operation
     tokio::time::timeout(timeout, async move {
         let listener = TcpListener::bind(format!("127.0.0.1:{}", port))
             .map_err(|e| format!("Failed to bind to port {}: {}", port, e))?;
-        
+
         // Set a timeout for the accept operation
         listener
             .set_nonblocking(false)
@@ -51,7 +51,7 @@ pub async fn start_oauth_server(port: u16, timeout_seconds: Option<u64>) -> Resu
 
             // Send a beautiful success page to the browser
             let response = get_success_html();
-            
+
             stream
                 .write_all(response.as_bytes())
                 .map_err(|e| e.to_string())?;
