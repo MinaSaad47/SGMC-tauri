@@ -20,4 +20,4 @@ if (!configResult.success)
   exit(1);
 }
 
-export const env = configResult.data;
+export const env = configResult.data!;
