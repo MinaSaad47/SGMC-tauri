@@ -46,6 +46,11 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Create .env file
+        run: |
+          echo "VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+
       - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
