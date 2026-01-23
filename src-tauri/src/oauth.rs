@@ -89,7 +89,7 @@ Content-Type: text/html
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
             overflow: hidden;
         }
         .container {
@@ -115,7 +115,7 @@ Content-Type: text/html
             height: 80px;
             border-radius: 50%;
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
             position: relative;
             margin-bottom: 1.5rem;
             animation: scaleIn 0.5s ease-out 0.2s both;
@@ -162,13 +162,8 @@ Content-Type: text/html
         <div class="checkmark"></div>
         <h1>Authentication Successful!</h1>
         <p>You have been successfully authenticated.</p>
-        <p class="auto-close">This window will close automatically...</p>
+        <p class="auto-close">You may now close this window.</p>
     </div>
-    <script>
-        setTimeout(() => {
-            window.close();
-        }, 2000);
-    </script>
 </body>
 </html>"#
 }
