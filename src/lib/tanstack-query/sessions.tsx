@@ -14,7 +14,7 @@ export function addSessionMutationOptions() {
       const parseResult = AddSessionSchema.safeParse(addSession);
 
       if (!parseResult.success) {
-        throw new Error("Invalid session data");
+        throw new Error(i18n.t("common.invalid_data"));
       }
 
       const data = parseResult.data;
@@ -30,7 +30,7 @@ export function addSessionMutationOptions() {
       );
 
       if (queryResult.rowsAffected === 0) {
-        throw new Error("Failed to add session");
+        throw new Error(i18n.t("common.operation_failed"));
       }
 
       return { id, ...data };

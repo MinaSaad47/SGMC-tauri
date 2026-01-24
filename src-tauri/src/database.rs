@@ -108,6 +108,28 @@ fn db_migrations() -> Vec<Migration> {
             CREATE INDEX IF NOT EXISTS idx_statements_clinic_id ON statements (clinic_id);
         "#,
         },
+        Migration {
+            version: 4,
+            kind: MigrationKind::Up,
+            description: "remove_unique_phone_constraint",
+            sql: r#"
+            CREATE TABLE patients_new (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            );
+
+            INSERT INTO patients_new (id, name, phone, created_at, updated_at)
+            SELECT id, name, phone, created_at, updated_at FROM patients;
+
+            DROP TABLE patients;
+            ALTER TABLE patients_new RENAME TO patients;
+
+            CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients (phone);
+        "#,
+        },
     ]
 }
 

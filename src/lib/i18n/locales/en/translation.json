@@ -40,7 +40,9 @@
     "security_check": "Security Check",
     "type_number_to_confirm": "Type the number {{number}} to confirm deletion:",
     "deleting": "Deleting...",
-    "deleting_entity": "Deleting"
+    "deleting_entity": "Deleting",
+    "invalid_data": "Invalid data provided",
+    "operation_failed": "Operation failed"
   },
   "doctors": {
     "title": "Doctors",

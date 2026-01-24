@@ -17,7 +17,7 @@ export function addPaymentMutationOptions() {
       const parseResult = AddPaymentSchema.safeParse(addPayment);
 
       if (!parseResult.success) {
-        throw new Error("Invalid payment data");
+        throw new Error(i18n.t("common.invalid_data"));
       }
 
       const data = parseResult.data;
@@ -33,7 +33,7 @@ export function addPaymentMutationOptions() {
       );
 
       if (queryResult.rowsAffected === 0) {
-        throw new Error("Failed to add payment");
+        throw new Error(i18n.t("common.operation_failed"));
       }
 
       return { id, ...data };

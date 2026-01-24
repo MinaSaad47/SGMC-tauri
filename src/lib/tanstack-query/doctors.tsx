@@ -22,7 +22,7 @@ export function addDoctorMutationOptions() {
   return mutationOptions({
     mutationFn: async (addDoctor: AddDoctorSchema) => {
       const parseResult = AddDoctorSchema.safeParse(addDoctor);
-      if (!parseResult.success) throw new Error("Invalid doctor data");
+      if (!parseResult.success) throw new Error(i18n.t("common.invalid_data"));
 
       const data = parseResult.data;
       const db = await getDb();
@@ -33,7 +33,7 @@ export function addDoctorMutationOptions() {
         [id, data.name, data.phone]
       );
 
-      if (result.rowsAffected === 0) throw new Error("Failed to add doctor");
+      if (result.rowsAffected === 0) throw new Error(i18n.t("common.operation_failed"));
       return id;
     },
     meta: {
@@ -47,7 +47,7 @@ export function updateDoctorMutationOptions() {
   return mutationOptions({
     mutationFn: async (data: { id: string; updateDoctor: UpdateDoctorSchema }) => {
       const parseResult = UpdateDoctorSchema.safeParse(data.updateDoctor);
-      if (!parseResult.success) throw new Error("Invalid doctor data");
+      if (!parseResult.success) throw new Error(i18n.t("common.invalid_data"));
 
       const updateData = parseResult.data;
       const db = await getDb();

@@ -364,9 +364,10 @@ export function addPaymentMutationOptions() {
 
       return (await getStatementDetails(addPayment.statementId))!;
     },
-    meta: {
-      invalidatesQueries: [getStatementsQueryKey()],
-      successMessage: "Payment added successfully",
-    },
-  });
-}
+        meta: {
+          invalidatesQueries: [getStatementsQueryKey()],
+          successMessage: i18n.t("messages.payment_added"),
+        },
+      });
+    }
+    

@@ -134,7 +134,7 @@ export function addPatientMutationOptions() {
       const parseResult = AddPatientSchema.safeParse(addPatient);
 
       if (!parseResult.success) {
-        throw new Error("Invalid patient data");
+        throw new Error(i18n.t("common.invalid_data"));
       }
 
       addPatient = parseResult.data;
@@ -156,7 +156,7 @@ export function addPatientMutationOptions() {
       );
 
       if (queryResult.rowsAffected === 0) {
-        throw new Error("Failed to add patient");
+        throw new Error(i18n.t("common.operation_failed"));
       }
 
       return (await getPatientDetails(id))!;

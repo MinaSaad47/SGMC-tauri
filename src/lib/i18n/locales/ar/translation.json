@@ -40,7 +40,9 @@
     "security_check": "فحص أمني",
     "type_number_to_confirm": "اكتب الرقم {{number}} لتأكيد الحذف:",
     "deleting": "جاري الحذف...",
-    "deleting_entity": "جاري حذف"
+    "deleting_entity": "جاري حذف",
+    "invalid_data": "البيانات المقدمة غير صالحة",
+    "operation_failed": "فشلت العملية"
   },
   "doctors": {
     "title": "الأطباء",
