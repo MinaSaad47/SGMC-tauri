@@ -42,7 +42,7 @@ export const PrintableStatement = forwardRef<
           <h2 className="text-xl font-semibold mb-2">
             {t("statements.details_title")}
           </h2>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 space-y-1">
             <p className="font-bold text-black text-lg">
               {statement.patient.name}
             </p>
@@ -50,6 +50,25 @@ export const PrintableStatement = forwardRef<
           </div>
         </div>
       </div>
+
+      {/* Basic Info (Doctor/Clinic) */}
+      {(statement.doctor || statement.clinic) && (
+        <div className="mb-8 p-4 bg-gray-50 rounded-lg grid grid-cols-2 gap-4 text-sm">
+          {statement.doctor && (
+            <div>
+              <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("doctors.singular")}</p>
+              <p className="font-bold">{statement.doctor.name}</p>
+              {statement.doctor.phone && <p className="text-xs text-gray-500">{statement.doctor.phone}</p>}
+            </div>
+          )}
+          {statement.clinic && (
+            <div>
+              <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("clinics.singular")}</p>
+              <p className="font-bold">{statement.clinic.name}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Financial Summary */}
       <div className="mb-8">

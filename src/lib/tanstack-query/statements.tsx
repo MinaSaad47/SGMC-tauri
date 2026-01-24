@@ -1,16 +1,17 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { debug } from "@tauri-apps/plugin-log";
 import { v7 as uuid } from "uuid";
 import { getDb } from "../db";
+import i18n from "../i18n";
 import { PagedList, PagingParams } from "../types";
-import {
+import { AddPaymentSchema } from "../types/payments";
+import
+{
   AddStatementSchema,
   Statement,
   StatementDetails,
   UpdateStatementSchema,
 } from "../types/statements";
-import { AddPaymentSchema } from "../types/payments";
-import { debug } from "@tauri-apps/plugin-log";
-import i18n from "../i18n";
 
 export function getStatementsQueryKey(
   params: Record<string, any> | undefined = undefined,
@@ -24,6 +25,8 @@ export class GetStatementsParams extends PagingParams {
   search?: string;
   patientId?: string;
   remainingFilter?: "all" | "positive" | "negative";
+  doctorId?: string;
+  clinicId?: string;
 
   constructor(init?: Partial<GetStatementsParams>) {
     super(init);
@@ -39,7 +42,7 @@ export function getStatementsQueryOptions(
     queryFn: async () => {
       const db = await getDb();
 
-      const { search, offset, limit, patientId, remainingFilter } = params;
+      const { search, offset, limit, patientId, remainingFilter, doctorId, clinicId } = params;
 
       const items = await db.select<any[]>(
         `
@@ -57,12 +60,33 @@ export function getStatementsQueryOptions(
                   'phone', p.phone,
                   'createdAt', p.created_at,
                   'updatedAt', p.updated_at
-              ) as patient
+              ) as patient,
+              CASE WHEN s.doctor_id IS NOT NULL THEN
+                json_object(
+                    'id', d.id,
+                    'name', d.name,
+                    'phone', d.phone,
+                    'createdAt', d.created_at,
+                    'updatedAt', d.updated_at
+                )
+              ELSE NULL END as doctor,
+              CASE WHEN s.clinic_id IS NOT NULL THEN
+                json_object(
+                    'id', c.id,
+                    'name', c.name,
+                    'createdAt', c.created_at,
+                    'updatedAt', c.updated_at
+                )
+              ELSE NULL END as clinic
             FROM statements s
             JOIN patients p ON s.patient_id = p.id
+            LEFT JOIN doctors d ON s.doctor_id = d.id
+            LEFT JOIN clinics c ON s.clinic_id = c.id
             WHERE
                 (?1 IS NULL OR s.patient_id = ?1) AND
-                (?2 IS NULL OR p.name LIKE '%' || ?2 || '%' OR p.phone LIKE '%' || ?2 || '%')
+                (?2 IS NULL OR p.name LIKE '%' || ?2 || '%' OR p.phone LIKE '%' || ?2 || '%') AND
+                (?6 IS NULL OR s.doctor_id = ?6) AND
+                (?7 IS NULL OR s.clinic_id = ?7)
           )
           WHERE
             (?5 = 'all' OR ?5 IS NULL) OR
@@ -71,7 +95,7 @@ export function getStatementsQueryOptions(
           ORDER BY createdAt DESC
           LIMIT ?3 OFFSET ?4
         `,
-        [patientId, search, limit, offset, remainingFilter],
+        [patientId, search, limit, offset, remainingFilter, doctorId, clinicId],
       );
 
       const [total] = await db.select<[{ count: number }]>(
@@ -83,19 +107,23 @@ export function getStatementsQueryOptions(
             JOIN patients p ON s.patient_id = p.id
             WHERE
               (?1 IS NULL OR s.patient_id = ?1) AND
-              (?2 IS NULL OR p.name LIKE '%' || ?2 || '%' OR p.phone LIKE '%' || ?2 || '%')
+              (?2 IS NULL OR p.name LIKE '%' || ?2 || '%' OR p.phone LIKE '%' || ?2 || '%') AND
+              (?4 IS NULL OR s.doctor_id = ?4) AND
+              (?5 IS NULL OR s.clinic_id = ?5)
           )
           WHERE
             (?3 = 'all' OR ?3 IS NULL) OR
             (?3 = 'positive' AND totalRemaining > 0) OR
             (?3 = 'negative' AND totalRemaining < 0)
         `,
-        [patientId, search, remainingFilter],
+        [patientId, search, remainingFilter, doctorId, clinicId],
       );
 
       const statements = items.map((i) => ({
         ...i,
         patient: JSON.parse(i.patient),
+        doctor: i.doctor ? JSON.parse(i.doctor) : undefined,
+        clinic: i.clinic ? JSON.parse(i.clinic) : undefined,
       }));
 
       return new PagedList<Statement>(statements, params, total.count);
@@ -155,12 +183,31 @@ async function getStatementDetails(id: string) {
               'createdAt', p.created_at,
               'updatedAt', p.updated_at
           ) as patient,
+          CASE WHEN s.doctor_id IS NOT NULL THEN
+            json_object(
+                'id', d.id,
+                'name', d.name,
+                'phone', d.phone,
+                'createdAt', d.created_at,
+                'updatedAt', d.updated_at
+            )
+          ELSE NULL END as doctor,
+          CASE WHEN s.clinic_id IS NOT NULL THEN
+            json_object(
+                'id', c.id,
+                'name', c.name,
+                'createdAt', c.created_at,
+                'updatedAt', c.updated_at
+            )
+          ELSE NULL END as clinic,
           COALESCE(sp.totalPaid, 0) as totalPaid,
           (s.total - COALESCE(sp.totalPaid, 0)) as totalRemaining,
           COALESCE(ss.sessions, '[]') as sessions,
           COALESCE(sp.payments, '[]') as payments
       FROM statements s
       JOIN patients p ON s.patient_id = p.id
+      LEFT JOIN doctors d ON s.doctor_id = d.id
+      LEFT JOIN clinics c ON s.clinic_id = c.id
       LEFT JOIN statement_sessions ss ON s.id = ss.statement_id
       LEFT JOIN statement_payments sp ON s.id = sp.statement_id
       WHERE s.id = ?
@@ -175,6 +222,8 @@ async function getStatementDetails(id: string) {
   return {
     ...statement,
     patient: statement.patient && JSON.parse(statement.patient),
+    doctor: statement.doctor ? JSON.parse(statement.doctor) : undefined,
+    clinic: statement.clinic ? JSON.parse(statement.clinic) : undefined,
     payments: statement.payments && JSON.parse(statement.payments),
     sessions: statement.sessions && JSON.parse(statement.sessions),
   } satisfies StatementDetails;
@@ -206,10 +255,10 @@ export function addStatementMutationOptions() {
 
       const queryResult = await db.execute(
         `
-        INSERT INTO statements (id, patient_id, total, created_at, updated_at)
-        VALUES (?, ?, ?, datetime('now'), datetime('now'))
+        INSERT INTO statements (id, patient_id, total, doctor_id, clinic_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `,
-        [id, addStatement.patientId, addStatement.total],
+        [id, addStatement.patientId, addStatement.total, addStatement.doctorId || null, addStatement.clinicId || null],
       );
 
       if (queryResult.rowsAffected === 0) {
@@ -244,10 +293,10 @@ export function updateStatementMutationOptions() {
       const queryResult = await db.execute(
         `
               UPDATE statements
-              SET total = ?, updated_at = datetime('now')
+              SET total = ?, doctor_id = ?, clinic_id = ?, updated_at = datetime('now')
               WHERE id = ?
             `,
-        [updateStatement.total, data.id],
+        [updateStatement.total, updateStatement.doctorId || null, updateStatement.clinicId || null, data.id],
       );
 
       if (queryResult.rowsAffected === 0) {

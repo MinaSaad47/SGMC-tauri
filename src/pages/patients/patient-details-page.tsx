@@ -1,26 +1,35 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { ErrorMessage } from "@/components/error-message";
+import { RestrictiveDeleteDialog } from "@/components/restrictive-delete-dialog";
+import { LoadingMessage } from "@/components/table-loading";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Pencil, Calendar, Phone, Plus, } from "lucide-react";
-import { PatientDetailsForm } from "./components/patient-details-form";
-import { getPatientDetailsQueryOptions } from "@/lib/tanstack-query/patients";
+import { deletePatientMutationOptions, getPatientDetailsQueryOptions } from "@/lib/tanstack-query/patients";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { LoadingMessage } from "@/components/table-loading";
-import { ErrorMessage } from "@/components/error-message";
-import { Badge } from "@/components/ui/badge";
-import { StatementsTable } from "../statements/components/statements-table";
-import { Link } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Calendar, Pencil, Phone, Plus, Trash } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { StatementsTable } from "../statements/components/statements-table";
+import { PatientDetailsForm } from "./components/patient-details-form";
 
 export default function PatientDetailsPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const patientDetails = useQuery(getPatientDetailsQueryOptions(id!));
+
+  const deleteMutation = useMutation({
+    ...deletePatientMutationOptions(),
+    onSuccess: () => navigate("/patients"),
+  });
+
+  if (deleteMutation.isSuccess) return null;
 
   if (patientDetails.isPending) {
     return <LoadingMessage message={t("patients.loading_details")} />;
@@ -48,15 +57,26 @@ export default function PatientDetailsPage() {
               <span className="text-muted-foreground">{patient.phone}</span>
             </div>
           </div>
-          <Button
-            variant={isEditing ? "outline" : "default"}
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-            className="gap-2"
-          >
-            <Pencil className="h-4 w-4" />
-            {isEditing ? t("common.cancel") : t("common.edit")}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant={isEditing ? "outline" : "default"}
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              {isEditing ? t("common.cancel") : t("common.edit")}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsDeleting(true)}
+              className="gap-2"
+            >
+              <Trash className="h-4 w-4" />
+              {t("common.delete")}
+            </Button>
+          </div>
         </CardHeader>
 
         <CardContent className="pt-6">
@@ -339,6 +359,16 @@ export default function PatientDetailsPage() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <RestrictiveDeleteDialog
+        open={isDeleting}
+        onOpenChange={setIsDeleting}
+        onConfirm={() => deleteMutation.mutate(patient.id)}
+        title={t("common.are_you_sure")}
+        description={t("common.cannot_be_undone")}
+        entityName={patient.name}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 }

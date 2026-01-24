@@ -3,7 +3,8 @@ import { LoadingMessage } from "@/components/table-loading";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
-import {
+import
+{
   Select,
   SelectContent,
   SelectItem,
@@ -11,32 +12,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebounce } from "@/lib/hooks";
-import {
+import { getClinicsQueryOptions } from "@/lib/tanstack-query/clinics";
+import { getDoctorsQueryOptions } from "@/lib/tanstack-query/doctors";
+import
+{
   GetStatementsParams,
   getStatementsQueryOptions,
-  deleteStatementMutationOptions,
 } from "@/lib/tanstack-query/statements";
 import { Statement } from "@/lib/types/statements";
 import { cn, formatCurrency, formatDate, shortenUuid } from "@/lib/utils";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { StatusBadge } from "@/components/status-badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Spinner } from "@/components/ui/spinner";
-import { MoreHorizontal, Trash } from "lucide-react";
-import {
+import
+{
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -54,14 +47,16 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
   const [remainingFilter, setRemainingFilter] = useState<
     "all" | "positive" | "negative"
   >("all");
-  const [deletingStatement, setDeletingStatement] = useState<Statement | null>(
-    null,
-  );
+  const [doctorIdFilter, setDoctorIdFilter] = useState<string | undefined>(undefined);
+  const [clinicIdFilter, setClinicIdFilter] = useState<string | undefined>(undefined);
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const doctorsQuery = useQuery(getDoctorsQueryOptions());
+  const clinicsQuery = useQuery(getClinicsQueryOptions());
 
   const statementsQuery = useQuery(
     getStatementsQueryOptions(
@@ -69,16 +64,13 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
         patientId,
         search: debouncedSearch,
         remainingFilter,
+        doctorId: doctorIdFilter === "all" ? undefined : doctorIdFilter,
+        clinicId: clinicIdFilter === "all" ? undefined : clinicIdFilter,
         page: pagination.pageIndex + 1,
         pageSize: pagination.pageSize,
       }),
     ),
   );
-
-  const deleteMutation = useMutation({
-    ...deleteStatementMutationOptions(),
-    onSuccess: () => setDeletingStatement(null),
-  });
 
   const columns = useMemo(() => {
     const allColumns: ColumnDef<Statement>[] = [
@@ -104,6 +96,16 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
             {row.original.patient.name}
           </Link>
         ),
+      },
+      {
+        accessorKey: "doctor.name",
+        header: t("doctors.singular"),
+        cell: ({ row }) => row.original.doctor?.name || "-",
+      },
+      {
+        accessorKey: "clinic.name",
+        header: t("clinics.singular"),
+        cell: ({ row }) => row.original.clinic?.name || "-",
       },
       {
         accessorKey: "status",
@@ -167,13 +169,6 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
                   {t("common.view_details")}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-600"
-                onClick={() => setDeletingStatement(row.original)}
-              >
-                <Trash className="me-2 h-4 w-4" />
-                {t("common.delete")}
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ),
@@ -197,38 +192,79 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
 
   return (
     <div className="relative h-full w-full">
-      <div className="flex flex-col md:flex-row gap-4 mb-4 items-end md:items-center">
-        {!patientId && (
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("statements.search_placeholder")}
-            className="max-w-sm"
-          />
-        )}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium whitespace-nowrap">
-            {t("statements.filter_remaining.label")}:
-          </span>
-          <Select
-            value={remainingFilter}
-            onValueChange={(val: any) => setRemainingFilter(val)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                {t("statements.filter_remaining.all")}
-              </SelectItem>
-              <SelectItem value="positive">
-                {t("statements.filter_remaining.positive")}
-              </SelectItem>
-              <SelectItem value="negative">
-                {t("statements.filter_remaining.negative")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col md:flex-row gap-4 items-end md:items-center justify-between">
+          {!patientId && (
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("statements.search_placeholder")}
+              className="max-w-sm"
+            />
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Remaining Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium whitespace-nowrap">
+                {t("statements.filter_remaining.label")}:
+              </span>
+              <Select
+                value={remainingFilter}
+                onValueChange={(val: any) => setRemainingFilter(val)}
+              >
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {t("statements.filter_remaining.all")}
+                  </SelectItem>
+                  <SelectItem value="positive">
+                    {t("statements.filter_remaining.positive")}
+                  </SelectItem>
+                  <SelectItem value="negative">
+                    {t("statements.filter_remaining.negative")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Doctor Filter */}
+            <Select
+              value={doctorIdFilter || "all"}
+              onValueChange={(val) => setDoctorIdFilter(val)}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={t("doctors.title")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all")} {t("doctors.title")}</SelectItem>
+                {doctorsQuery.data?.map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id}>
+                    {doctor.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Clinic Filter */}
+            <Select
+              value={clinicIdFilter || "all"}
+              onValueChange={(val) => setClinicIdFilter(val)}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={t("clinics.title")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all")} {t("clinics.title")}</SelectItem>
+                {clinicsQuery.data?.map((clinic) => (
+                  <SelectItem key={clinic.id} value={clinic.id}>
+                    {clinic.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
       <DataTable
@@ -240,37 +276,6 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
           statementsQuery.data.pagingInfo.total / pagination.pageSize,
         )}
       />
-
-      <AlertDialog
-        open={!!deletingStatement}
-        onOpenChange={(open) => !open && setDeletingStatement(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("common.are_you_sure")}</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>{t("common.cannot_be_undone")}</p>
-              <p className="font-bold text-red-600">
-                {t("statements.delete_warning")}
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() =>
-                deletingStatement && deleteMutation.mutate(deletingStatement.id)
-              }
-            >
-              {deleteMutation.isPending && (
-                <Spinner className="me-2 text-white" />
-              )}
-              {t("common.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

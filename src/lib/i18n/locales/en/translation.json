@@ -33,7 +33,33 @@
     "error": "Error",
     "print": "Print",
     "file": "File",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "management": "Management",
+    "all": "All",
+    "none": "None",
+    "security_check": "Security Check",
+    "type_number_to_confirm": "Type the number {{number}} to confirm deletion:",
+    "deleting": "Deleting...",
+    "deleting_entity": "Deleting"
+  },
+  "doctors": {
+    "title": "Doctors",
+    "singular": "Doctor",
+    "add_new": "Add New Doctor",
+    "select_placeholder": "Select a doctor",
+    "form": {
+      "name_placeholder": "Doctor's name",
+      "phone_placeholder": "Doctor's phone (optional)"
+    }
+  },
+  "clinics": {
+    "title": "Clinics",
+    "singular": "Clinic",
+    "add_new": "Add New Clinic",
+    "select_placeholder": "Select a clinic",
+    "form": {
+      "name_placeholder": "Clinic name"
+    }
   },
   "home": {
     "welcome": "Welcome to SGMC",
@@ -96,7 +122,19 @@
     "payment_updated_failed": "Failed to update payment",
     "payment_deleted_failed": "Failed to delete payment",
     "session_updated_failed": "Failed to update session",
-    "session_deleted_failed": "Failed to delete session"
+    "session_deleted_failed": "Failed to delete session",
+    "doctor_added": "Doctor added successfully",
+    "doctor_updated": "Doctor updated successfully",
+    "doctor_updated_failed": "Failed to update doctor",
+    "clinic_added": "Clinic added successfully",
+    "clinic_updated": "Clinic updated successfully",
+    "clinic_updated_failed": "Failed to update clinic",
+    "patient_deleted": "Patient deleted successfully",
+    "patient_deleted_failed": "Failed to delete patient",
+    "doctor_deleted": "Doctor deleted successfully",
+    "doctor_deleted_failed": "Failed to delete doctor",
+    "clinic_deleted": "Clinic deleted successfully",
+    "clinic_deleted_failed": "Failed to delete clinic"
   },
   "patients": {
     "title": "Patients",

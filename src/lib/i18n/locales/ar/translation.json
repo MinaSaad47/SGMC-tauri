@@ -33,7 +33,33 @@
     "error": "خطأ",
     "print": "طباعة",
     "file": "ملف",
-    "load_more": "تحميل المزيد"
+    "load_more": "تحميل المزيد",
+    "management": "الإدارة",
+    "all": "الكل",
+    "none": "لا يوجد",
+    "security_check": "فحص أمني",
+    "type_number_to_confirm": "اكتب الرقم {{number}} لتأكيد الحذف:",
+    "deleting": "جاري الحذف...",
+    "deleting_entity": "جاري حذف"
+  },
+  "doctors": {
+    "title": "الأطباء",
+    "singular": "الطبيب",
+    "add_new": "إضافة طبيب جديد",
+    "select_placeholder": "اختر طبيباً",
+    "form": {
+      "name_placeholder": "اسم الطبيب",
+      "phone_placeholder": "هاتف الطبيب (اختياري)"
+    }
+  },
+  "clinics": {
+    "title": "العيادات",
+    "singular": "العيادة",
+    "add_new": "إضافة عيادة جديدة",
+    "select_placeholder": "اختر عيادة",
+    "form": {
+      "name_placeholder": "اسم العيادة"
+    }
   },
   "home": {
     "welcome": "مرحباً بكم في SGMC",
@@ -90,13 +116,23 @@
     "session_added": "تم إضافة الجلسة بنجاح",
     "session_updated": "تم تحديث الجلسة بنجاح",
     "session_deleted": "تم حذف الجلسة بنجاح",
-    "patient_updated_failed": "فشل تحديث بيانات المريض",
-    "statement_updated_failed": "فشل تحديث الفاتورة",
-    "statement_deleted_failed": "فشل حذف الفاتورة",
-    "payment_updated_failed": "فشل تحديث الدفعة",
-    "payment_deleted_failed": "فشل حذف الدفعة",
-    "session_updated_failed": "فشل تحديث الجلسة",
-    "session_deleted_failed": "فشل حذف الجلسة"
+    "statement_deleted_failed": "فشل في حذف الكشف",
+    "payment_updated_failed": "فشل في تحديث الدفعة",
+    "payment_deleted_failed": "فشل في حذف الدفعة",
+    "session_updated_failed": "فشل في تحديث الجلسة",
+    "session_deleted_failed": "فشل في حذف الجلسة",
+    "doctor_added": "تم إضافة الطبيب بنجاح",
+    "doctor_updated": "تم تحديث الطبيب بنجاح",
+    "doctor_updated_failed": "فشل في تحديث الطبيب",
+    "clinic_added": "تم إضافة العيادة بنجاح",
+    "clinic_updated": "تم تحديث العيادة بنجاح",
+    "clinic_updated_failed": "فشل في تحديث العيادة",
+    "patient_deleted": "تم حذف المريض بنجاح",
+    "patient_deleted_failed": "فشل في حذف المريض",
+    "doctor_deleted": "تم حذف الطبيب بنجاح",
+    "doctor_deleted_failed": "فشل في حذف الطبيب",
+    "clinic_deleted": "تم حذف العيادة بنجاح",
+    "clinic_deleted_failed": "فشل في حذف العيادة"
   },
   "patients": {
     "title": "المرضى",

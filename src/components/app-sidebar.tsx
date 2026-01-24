@@ -1,31 +1,32 @@
-import { Home, Inbox, Settings, Users, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Building2, Home, Inbox, RefreshCw, Settings, Stethoscope, Users, Wifi, WifiOff } from "lucide-react";
 
 import logo from "@/assets/logo.svg";
 import
 {
   Sidebar,
   SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSyncStore } from "@/lib/sync-store";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { BackButton } from "./back-button";
 import { LanguageToggle } from "./language-toggle";
-import { useSyncStore } from "@/lib/sync-store";
-import { cn } from "@/lib/utils";
 
-export function AppSidebar() {
+export function AppSidebar()
+{
   const { t } = useTranslation();
   const { isOnline, isAutoSyncEnabled, isSyncing } = useSyncStore();
 
-  const items = [
+  const mainItems = [
     {
       title: t("common.home"),
       url: "/",
@@ -39,11 +40,24 @@ export function AppSidebar() {
     {
       title: t("common.statements"),
       url: "/statements",
-      icon: Inbox, // Reusing Inbox icon for now, can be changed later
+      icon: Inbox,
+    },
+  ];
+
+  const managementItems = [
+    {
+      title: t("doctors.title"),
+      url: "/doctors",
+      icon: Stethoscope,
+    },
+    {
+      title: t("clinics.title"),
+      url: "/clinics",
+      icon: Building2,
     },
     {
       title: t("common.settings"),
-      url: "/settings", 
+      url: "/settings",
       icon: Settings,
     },
   ];
@@ -62,7 +76,25 @@ export function AppSidebar() {
           <SidebarGroupLabel>{t("common.application")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link to={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>{t("common.management")}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {managementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url}>

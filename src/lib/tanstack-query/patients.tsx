@@ -205,3 +205,21 @@ export function updatePatientMutationOptions() {
     },
   });
 }
+
+export function deletePatientMutationOptions() {
+  return mutationOptions({
+    mutationFn: async (id: string) => {
+      const db = await getDb();
+      const queryResult = await db.execute("DELETE FROM patients WHERE id = ?", [id]);
+
+      if (queryResult.rowsAffected === 0) {
+        throw new Error(i18n.t("messages.patient_deleted_failed"));
+      }
+      return id;
+    },
+    meta: {
+      invalidatesQueries: [getPatientsQueryKey()],
+      successMessage: i18n.t("messages.patient_deleted"),
+    },
+  });
+}

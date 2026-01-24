@@ -15,6 +15,10 @@ import NewStatementForPatientPage from "./pages/patients/new-statement-for-patie
 import PatientDetailsPage from "./pages/patients/patient-details-page";
 import SettingsPage from "./pages/settings-page";
 import { useGlobalOnlineStatus } from "@/lib/hooks/use-global-online-status";
+import DoctorsPage from "./pages/doctors/doctors-page";
+import NewDoctorPage from "./pages/doctors/new-doctor-page";
+import ClinicsPage from "./pages/clinics/clinics-page";
+import NewClinicPage from "./pages/clinics/new-clinic-page";
 
 function App() {
   useAutoSync();
@@ -44,6 +48,10 @@ function App() {
             element={<StatementDetailsPage />}
           ></Route>
           <Route path="/settings" element={<SettingsPage />}></Route>
+          <Route path="/doctors" element={<DoctorsPage />}></Route>
+          <Route path="/doctors/new" element={<NewDoctorPage />}></Route>
+          <Route path="/clinics" element={<ClinicsPage />}></Route>
+          <Route path="/clinics/new" element={<NewClinicPage />}></Route>
         </Route>
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />

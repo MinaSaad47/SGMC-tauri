@@ -15,6 +15,13 @@ import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { MoreHorizontal, Eye } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function PatientsTable() {
   const { t } = useTranslation();
@@ -65,6 +72,26 @@ export function PatientsTable() {
         {
           accessorKey: "updatedAt",
           header: t("patients.updated_at"),
+        },
+        {
+          id: "actions",
+          cell: ({ row }) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={`/patients/${row.original.id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {t("common.view_details")}
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
         },
       ] satisfies ColumnDef<Patient>[],
     [t],

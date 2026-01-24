@@ -1,16 +1,24 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { addStatementMutationOptions } from "@/lib/tanstack-query/statements";
+import { getDoctorsQueryOptions } from "@/lib/tanstack-query/doctors";
+import { getClinicsQueryOptions } from "@/lib/tanstack-query/clinics";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AddStatementSchema,
   type AddStatementSchema as AddStatementSchemaType,
@@ -23,9 +31,8 @@ interface NewStatementFormProps {
   onSuccess: () => void;
 }
 
-// We only need the 'total' from the form, patientId comes from props
-const FormSchema = AddStatementSchema.pick({ total: true });
-type FormSchemaType = Pick<AddStatementSchemaType, "total">;
+const FormSchema = AddStatementSchema.pick({ total: true, doctorId: true, clinicId: true });
+type FormSchemaType = Pick<AddStatementSchemaType, "total" | "doctorId" | "clinicId">;
 
 export function NewStatementForm({
   patientId,
@@ -33,10 +40,16 @@ export function NewStatementForm({
 }: NewStatementFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  
+  const doctorsQuery = useQuery(getDoctorsQueryOptions());
+  const clinicsQuery = useQuery(getClinicsQueryOptions());
+
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       total: 0,
+      doctorId: undefined,
+      clinicId: undefined,
     },
   });
 
@@ -51,6 +64,8 @@ export function NewStatementForm({
     addMutation.mutate({
       patientId,
       total: data.total,
+      doctorId: data.doctorId,
+      clinicId: data.clinicId,
     });
   };
 
@@ -73,16 +88,59 @@ export function NewStatementForm({
               aria-invalid={fieldState.invalid}
               placeholder={t("statements.form.total_placeholder")}
               autoComplete="off"
-              onChange={(e) => field.onChange(e.target.valueAsNumber * 100)} // Store as cents
-              value={field.value / 100} // Display as dollars/pounds
+              onChange={(e) => field.onChange(e.target.valueAsNumber * 100)}
+              value={field.value / 100}
             />
-            <FieldDescription>
-              {t("statements.form.total_description")}
-            </FieldDescription>
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Controller
+          name="doctorId"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("doctors.title")}</FieldLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("doctors.select_placeholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {doctorsQuery.data?.map((doctor) => (
+                    <SelectItem key={doctor.id} value={doctor.id}>
+                      {doctor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="clinicId"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("clinics.title")}</FieldLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("clinics.select_placeholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clinicsQuery.data?.map((clinic) => (
+                    <SelectItem key={clinic.id} value={clinic.id}>
+                      {clinic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+      </div>
 
       <div className="flex justify-end gap-4 pt-4">
         <Button
