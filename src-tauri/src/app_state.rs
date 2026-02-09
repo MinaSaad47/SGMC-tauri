@@ -22,8 +22,8 @@ impl Default for AppState {
             .unwrap_or(60);
 
         let ip_address = local_ip_address::local_ip()
-            .expect("Failed to get IP address")
-            .to_string();
+            .map(|ip| ip.to_string())
+            .unwrap_or_else(|_| "127.0.0.1".to_string());
 
         let config = AppConfig {
             db_path: db_path,
