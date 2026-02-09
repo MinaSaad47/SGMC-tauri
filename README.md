@@ -1,55 +1,85 @@
-# SGMC Management System
+# Hospital Tauri
 
-SGMC is a lightweight desktop application for record management and financial tracking. This is a volunteering project.
+A modern, robust desktop application for hospital and clinic management, built with Tauri v2, React 19, and Rust.
 
-## Architecture
+## 🚀 Features
 
-The project is built with Tauri, following a philosophy of minimal Rust code. Almost all logic is handled in the React/TypeScript frontend to ensure high maintainability and rapid development.
+*   **Patient Management:** Add, update, and manage patient records with comprehensive search and filtering.
+*   **Statement Generation:** Create detailed financial statements and invoices for treatments.
+*   **Doctor & Clinic Management:** Assign doctors and clinics to statements; manage their profiles.
+*   **Attachment Handling:** Upload and manage scanned documents/images for each statement.
+*   **Printing Support:** Custom, high-quality print previews for A4 invoices, supporting multi-page statements and full-page attachments.
+*   **Backup & Restore:**
+    *   **Hybrid Incremental Backup:** Efficiently backs up the SQLite database (snapshots) and synchronizes attachments (incremental diff) to Google Drive.
+    *   **One-Click Restore:** Seamlessly restore data and attachments from the cloud.
+*   **Internationalization (i18n):** Full support for English and Arabic (RTL).
+*   **Dark Mode:** Built-in theme switching.
 
-## Data Management
+## 🛠️ Tech Stack
 
-Database state and synchronization are managed using TanStack Query. It interacts directly with the SQLite database via the Tauri SQL plugin within the frontend layer. This setup handles:
+### Core
+*   **Framework:** [Tauri v2](https://tauri.app/)
+*   **Backend:** Rust
+*   **Frontend:** React 19, TypeScript
+*   **Database:** SQLite (via `tauri-plugin-sql`)
 
-- Asynchronous data fetching and caching.
-- Seamless synchronization between the persistent SQLite storage and the user interface.
+### Frontend Ecosystem
+*   **Build Tool:** Vite
+*   **Styling:** TailwindCSS v4
+*   **UI Components:** Shadcn UI, Radix UI
+*   **State Management:** Zustand, TanStack Query (React Query)
+*   **Routing:** React Router v7
+*   **Validation:** Zod
+*   **Forms:** React Hook Form
 
-## Tech Stack
+## 📦 Prerequisites
 
-- Framework: Tauri v2
+Before you begin, ensure you have the following installed:
+*   [Node.js](https://nodejs.org/) (v18 or later)
+*   [pnpm](https://pnpm.io/)
+*   [Rust](https://www.rust-lang.org/tools/install) (latest stable)
+*   Build tools for your platform (Visual Studio C++ Build Tools for Windows, Xcode Command Line Tools for macOS, etc.)
 
-- Frontend: React 19, TypeScript
+## 🏁 Getting Started
 
-- State Management: TanStack Query v5
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/hospital-tauri.git
+    cd hospital-tauri
+    ```
 
-- Database: SQLite (Tauri SQL Plugin)
+2.  **Install frontend dependencies:**
+    ```bash
+    pnpm install
+    ```
 
-- Styling: Tailwind CSS v4
+3.  **Run the development server:**
+    ```bash
+    pnpm tauri dev
+    ```
+    This command will start the Vite frontend server and compile the Rust backend.
 
-- Localization: i18next (English & Arabic RTL support)
+## 🏗️ Build & Release
 
-## Linux Compatibility (Wayland)
-
-There is a known limitation with WebKitGTK when running on Wayland. To ensure the application runs correctly on Linux distributions using Wayland, a workaround has been implemented in `src-tauri/src/main.rs`.
-
-The application detects the Wayland environment and automatically restarts itself with the following environment variables:
-
-- `GDK_BACKEND=x11`
-
-- `WEBKIT_DISABLE_COMPOSITING_MODE=1`
-
-## Build and Development
-
-### Development
+To build the application for production:
 
 ```bash
-pnpm install
-pnpm tauri dev
+pnpm tauri build
 ```
+The output binaries/installers will be located in `src-tauri/target/release/bundle/`.
 
-### Cross-Compilation (Arch Linux to Windows)
+### Linux Compatibility (Wayland)
+The application includes a built-in workaround for WebKitGTK on Wayland. It detects the environment and automatically restarts with `GDK_BACKEND=x11` to ensure stability.
 
-To build for Windows using cargo-xwin on Arch Linux:
-
+### Cross-Compilation
+To build for Windows from Linux (e.g., using `cargo-xwin`):
 ```bash
 pnpm tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
 ```
+
+## 💾 Backup System
+
+The application uses a **Hybrid Incremental Backup** strategy to Google Drive:
+*   **Database:** A full, compressed snapshot (`.db.gz`) is created for every backup.
+*   **Attachments:** Only new or modified files are uploaded (incremental sync) to an `attachments/` folder on Drive.
+*   **Restore:** Downloads the selected database snapshot and syncs any missing attachment files from the cloud to the local machine.
