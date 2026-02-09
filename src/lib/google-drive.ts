@@ -2,7 +2,7 @@ import { getAppConfig } from "@/lib/config/app";
 import { getVersion } from "@tauri-apps/api/app";
 import { listen } from "@tauri-apps/api/event";
 import { join, tempDir } from "@tauri-apps/api/path";
-import { readFile, remove } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readFile, remove, writeFile } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Store } from "@tauri-apps/plugin-store";
@@ -251,15 +251,21 @@ class GoogleDriveClient
     await store.save();
   }
 
-  private async getOrCreateFolder(): Promise<string>
+  private async getOrCreateFolder(folderName: string, parentId?: string): Promise<string>
   {
     const token = await this.getAccessToken();
-    const query = new URLSearchParams({
-      q: "name = 'SGMC Backups' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    let query = `name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    if (parentId)
+    {
+      query += ` and '${parentId}' in parents`;
+    }
+
+    const searchParams = new URLSearchParams({
+      q: query,
       fields: "files(id)",
     });
 
-    const response = await fetch(`${DRIVE_API_URL}?${query.toString()}`, {
+    const response = await fetch(`${DRIVE_API_URL}?${searchParams.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
@@ -269,25 +275,196 @@ class GoogleDriveClient
       return data.files[0].id;
     }
 
+    const body: any = {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+    };
+    if (parentId)
+    {
+      body.parents = [parentId];
+    }
+
     const createResponse = await fetch(DRIVE_API_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        name: "SGMC Backups",
-        mimeType: "application/vnd.google-apps.folder",
-      }),
+      body: JSON.stringify(body),
     });
     const folder = await createResponse.json();
     return folder.id;
   }
 
+  // List all files in a specific Drive folder to perform diff
+  private async listRemoteFiles(folderId: string): Promise<Map<string, string>>
+  {
+    const token = await this.getAccessToken();
+    const files = new Map<string, string>(); // Filename -> ID
+    let pageToken: string | undefined = undefined;
+
+    do
+    {
+      const params: Record<string, string> = {
+        q: `'${folderId}' in parents and trashed = false`,
+        fields: "nextPageToken, files(id, name)",
+        pageSize: "1000", // Fetch max per page for speed
+      };
+      if (pageToken) params.pageToken = pageToken;
+
+      const response = await fetch(`${DRIVE_API_URL}?${new URLSearchParams(params)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+
+      if (data.files)
+      {
+        for (const file of data.files)
+        {
+          files.set(file.name, file.id);
+        }
+      }
+      pageToken = data.nextPageToken;
+    } while (pageToken);
+
+    return files;
+  }
+
+  // Upload a single file to Drive
+  private async uploadFile(name: string, data: Uint8Array, parentId: string, mimeType: string = "application/octet-stream"): Promise<void>
+  {
+    const token = await this.getAccessToken();
+    const metadata = {
+      name,
+      parents: [parentId],
+    };
+
+    const formData = new FormData();
+    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+    // @ts-ignore
+    formData.append("file", new Blob([data], { type: mimeType }));
+
+    const response = await fetch(`${UPLOAD_API_URL}?uploadType=multipart`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!response.ok)
+    {
+      console.warn(`Failed to upload ${name}: ${await response.text()}`);
+    }
+  }
+
+  async syncAttachments(rootFolderId: string): Promise<void>
+  {
+    try
+    {
+      // 1. Get/Create "attachments" folder inside "SGMC Backups"
+      const attachmentsFolderId = await this.getOrCreateFolder("attachments", rootFolderId);
+
+      // 2. List Remote Files
+      const remoteFiles = await this.listRemoteFiles(attachmentsFolderId);
+
+      // 3. List Local Files
+      const config = await getAppConfig();
+      const attachmentsDir = `${config.data_dir}/attachments`;
+      
+      if (!(await exists(attachmentsDir))) return;
+
+      const localEntries = await readDir(attachmentsDir);
+      const localFiles = localEntries.filter(e => e.isFile); // Only files
+
+      // 4. Diff & Upload
+      const uploads: Promise<void>[] = [];
+      
+      for (const file of localFiles)
+      {
+        if (!remoteFiles.has(file.name))
+        {
+          // New file! Upload it.
+          const uploadTask = async () => {
+             const filePath = await join(attachmentsDir, file.name);
+             const data = await readFile(filePath);
+             await this.uploadFile(file.name, data, attachmentsFolderId);
+          };
+          uploads.push(uploadTask());
+        }
+      }
+
+      // 5. Execute concurrent uploads (simple batching)
+      // For now, allow 3 parallel uploads to avoid choking network/drive API
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < uploads.length; i += BATCH_SIZE) {
+          await Promise.all(uploads.slice(i, i + BATCH_SIZE));
+      }
+
+    } catch (e)
+    {
+      console.error("Attachment sync failed:", e);
+      // We don't fail the whole backup if attachments fail, just log it
+    }
+  }
+
+  async restoreAttachments(rootFolderId: string): Promise<void>
+  {
+    try 
+    {
+       const config = await getAppConfig();
+       const attachmentsDir = `${config.data_dir}/attachments`;
+       if (!(await exists(attachmentsDir))) {
+          await mkdir(attachmentsDir, { recursive: true });
+       }
+
+       // 1. Find remote attachments folder
+       const attachmentsFolderId = await this.getOrCreateFolder("attachments", rootFolderId);
+       
+       // 2. List all remote attachments
+       const remoteFiles = await this.listRemoteFiles(attachmentsFolderId);
+
+       // 3. Download missing files
+       const downloads: Promise<void>[] = [];
+       for (const [name, id] of remoteFiles.entries()) {
+          const localPath = await join(attachmentsDir, name);
+          if (!(await exists(localPath))) {
+             const task = async () => {
+                const data = await this.downloadFile(id); // Use separate download method
+                await writeFile(localPath, data);
+             };
+             downloads.push(task());
+          }
+       }
+
+       // 4. Execute concurrent downloads
+       const BATCH_SIZE = 5;
+       for (let i = 0; i < downloads.length; i += BATCH_SIZE) {
+          await Promise.all(downloads.slice(i, i + BATCH_SIZE));
+       }
+
+    } catch (e) {
+       console.error("Attachment restore failed:", e);
+    }
+  }
+
+  // Helper for generic file download (reused by backup download)
+  async downloadFile(fileId: string): Promise<Uint8Array> {
+      const token = await this.getAccessToken();
+      const response = await fetch(`${DRIVE_API_URL}/${fileId}?alt=media`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Download failed");
+      return new Uint8Array(await response.arrayBuffer());
+  }
+
   async uploadBackup(): Promise<string>
   {
     const token = await this.getAccessToken();
-    const folderId = await this.getOrCreateFolder();
+    const folderId = await this.getOrCreateFolder("SGMC Backups");
+
+    // 1. Trigger Attachment Sync (Incremental)
+    // We await this so the backup is consistent, but UI might want to show separate progress?
+    // For now, part of the same Promise.
+    await this.syncAttachments(folderId);
 
     const db = await getDb();
     const tempName = `sgmc_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.db.gz`;
@@ -349,10 +526,10 @@ class GoogleDriveClient
   async listBackups(pageToken?: string, pageSize: number = 10): Promise<{ files: BackupFile[], nextPageToken?: string }>
   {
     const token = await this.getAccessToken();
-    const folderId = await this.getOrCreateFolder();
+    const folderId = await this.getOrCreateFolder("SGMC Backups");
     
     const params: Record<string, string> = {
-      q: `'${folderId}' in parents and trashed = false`,
+      q: `'${folderId}' in parents and trashed = false and mimeType != 'application/vnd.google-apps.folder'`, // Exclude the attachments folder itself
       fields: "nextPageToken, files(id, name, createdTime, properties)",
       orderBy: "createdTime desc",
       pageSize: pageSize.toString(),
@@ -383,6 +560,16 @@ class GoogleDriveClient
   {
     const token = await this.getAccessToken();
 
+    // Trigger restore of attachments alongside DB
+    // We need the root folder ID first.
+    // Optimization: We could store root ID, but fetching it is safe.
+    try {
+       const rootFolderId = await this.getOrCreateFolder("SGMC Backups");
+       await this.restoreAttachments(rootFolderId);
+    } catch (e) {
+       console.warn("Auto-restore of attachments failed, proceeding with DB only", e);
+    }
+
     // First get metadata to check filename for .gz extension
     const metaResponse = await fetch(`${DRIVE_API_URL}/${fileId}?fields=name`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -390,13 +577,7 @@ class GoogleDriveClient
     const meta = await metaResponse.json();
     const isCompressed = meta.name?.endsWith(".gz");
 
-    const response = await fetch(`${DRIVE_API_URL}/${fileId}?alt=media`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) throw new Error("Download failed");
-
-    const data = new Uint8Array(await response.arrayBuffer());
+    const data = await this.downloadFile(fileId);
 
     if (isCompressed)
     {
