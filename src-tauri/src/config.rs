@@ -1,10 +1,19 @@
-/// Configuration-related Tauri commands
+use serde::{Deserialize, Serialize};
+use tauri::State;
 
-/// Get the sync interval in minutes from environment variables
+use crate::AppState;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppConfig {
+    pub db_path: String,
+    pub db_url: String,
+    pub data_dir: String,
+    pub sync_interval_minutes: u32,
+    pub ip_address: String,
+    pub port: u16,
+}
+
 #[tauri::command]
-pub fn get_sync_interval_minutes() -> u64 {
-    std::env::var("SYNC_INTERVAL_MINUTES")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or(60)
+pub fn get_app_config(state: State<'_, AppState>) -> AppConfig {
+    state.config.clone()
 }

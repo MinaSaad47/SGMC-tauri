@@ -143,9 +143,13 @@
 }
 
 @layer base {
+    img {
+            display: initial
+        }
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
         @apply bg-background text-foreground;
     }
@@ -157,23 +161,3 @@
     }
 }
 
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #print-content, #print-content * {
-        visibility: visible;
-    }
-    #print-content {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    @page {
-        size: auto;
-        margin: 0mm;
-    }
-}

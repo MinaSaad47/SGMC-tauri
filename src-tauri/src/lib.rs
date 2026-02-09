@@ -1,16 +1,24 @@
-use crate::{database::get_db_plugin, logging::get_logging_plugin};
 use log;
+use tauri::Manager;
 
+use crate::app_state::AppState;
+
+mod app_state;
 mod config;
 mod database;
 mod filesystem;
 mod logging;
-mod oauth;
+mod server;
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     log::info!("Starting application...");
-    log::info!("Database URL: {}", database::DB_URL.as_str());
+
+
+    let app_state = AppState::default();
+
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -19,14 +27,23 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(get_logging_plugin())
-        .plugin(get_db_plugin())
+        .plugin(logging::get_logging_plugin())
+        .plugin(database::get_db_plugin(&app_state.config.db_url))
         .plugin(tauri_plugin_opener::init())
+        .manage(app_state)
+        .setup(|app| {
+            let handle = app.handle().clone();
+            let config = handle.state::<AppState>().config.clone();
+            log::info!("{:#?}", &config);
+            tauri::async_runtime::spawn(async move {
+                let _ = server::start_server(handle).await;
+                log::info!("Scanner/OAuth server started on port {}", config.port);
+            });
+            
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
-            database::get_db_url,
-            database::get_db_path,
-            oauth::start_oauth_server,
-            config::get_sync_interval_minutes
+            config::get_app_config
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

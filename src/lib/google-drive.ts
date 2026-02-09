@@ -1,18 +1,17 @@
-import { env } from "./config/env";
+import { getAppConfig } from "@/lib/config/app";
 import { getVersion } from "@tauri-apps/api/app";
-import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { join, tempDir } from "@tauri-apps/api/path";
 import { readFile, remove } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Store } from "@tauri-apps/plugin-store";
-import { getDb } from "./db";
+import { env } from "./config/env";
+import { getDb } from "./database";
 
 const CLIENT_ID = env.VITE_GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = env.VITE_GOOGLE_CLIENT_SECRET;
-const REDIRECT_PORT = 14200;
 
-const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}`;
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -75,6 +74,14 @@ async function decompressData(data: Uint8Array): Promise<Uint8Array>
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
+// Get Redirect URL
+async function getRedirectUrl()
+{
+  const config = await getAppConfig();
+  const REDIRECT_URI = `http://localhost:${config.port}/oauth/callback`;
+  return REDIRECT_URI;
+}
+
 class GoogleDriveClient
 {
   private _store: Store | null = null;
@@ -99,13 +106,26 @@ class GoogleDriveClient
     await store.set("pkce_verifier", codeVerifier);
     await store.save();
 
-    // 2. Start the local server listener
-    const codePromise = invoke<string>("start_oauth_server", { port: REDIRECT_PORT });
+    // 2. Set up listener for the code BEFORE opening browser
+    // This replaces the old blocking invoke("start_oauth_server")
+    const codePromise = new Promise<string>((resolve) =>
+    {
+      listen<string>("oauth-code-received", (event) =>
+      {
+        resolve(event.payload);
+      }).then((unlisten) =>
+      {
+        // Auto-unlisten after 5 minutes timeout to prevent leaks if user abandons
+        setTimeout(() => unlisten(), 300000);
+        // Also unlisten when resolved? Ideally yes, but promise resolves once.
+        // For cleaner code, we assume the app lifecycle handles single auth attempts roughly.
+      });
+    });
 
     // 3. Open the browser to Google's Auth URL with PKCE params
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: await getRedirectUrl(),
       response_type: "code",
       scope: SCOPES,
       access_type: "offline",
@@ -116,11 +136,12 @@ class GoogleDriveClient
 
     await openUrl(`${AUTH_ENDPOINT}?${params.toString()}`);
 
-    // 4. Wait for the code
+    // 4. Wait for the code from the event
     const code = await codePromise;
 
     // 5. Exchange code for tokens using verifier
     await this.exchangeCodeForToken(code, codeVerifier);
+
   }
 
   async exchangeCodeForToken(code: string, verifier?: string): Promise<void>
@@ -138,7 +159,7 @@ class GoogleDriveClient
       code: code,
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: await getRedirectUrl(),
       grant_type: "authorization_code",
       code_verifier: codeVerifier,
     });

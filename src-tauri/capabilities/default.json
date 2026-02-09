@@ -45,6 +45,14 @@
       ]
     },
     {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
       "identifier": "fs:read-dirs",
       "allow": [
         {

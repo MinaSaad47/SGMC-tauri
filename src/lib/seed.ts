@@ -1,6 +1,6 @@
 import { info } from "@tauri-apps/plugin-log";
 import { v7 as uuid } from "uuid";
-import { getDb } from "./db";
+import { getDb } from "./database";
 
 const PATIENTS = [
   { name: "John Doe", phone: "+1234567890" },

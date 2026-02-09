@@ -1,14 +1,15 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { getDb } from "../db";
+import { v7 as uuid } from "uuid";
+import { getDb } from "../database";
+import i18n from "../i18n";
 import { PagedList, PagingParams } from "../types";
-import {
+import
+{
   AddPatientSchema,
   Patient,
   PatientDetails,
   UpdatePatientSchema,
 } from "../types/patients";
-import { v7 as uuid } from "uuid";
-import i18n from "../i18n";
 
 export function getPatientsQueryKey(
   params: Record<string, any> | undefined = undefined,

@@ -1,10 +1,10 @@
 import { mutationOptions } from "@tanstack/react-query";
+import { debug } from "@tauri-apps/plugin-log";
 import { v7 as uuid } from "uuid";
-import { getDb } from "../db";
+import { getDb } from "../database";
+import i18n from "../i18n";
 import { AddSessionSchema, UpdateSessionSchema } from "../types/sessions";
 import { getStatementsQueryKey } from "./statements";
-import { debug } from "@tauri-apps/plugin-log";
-import i18n from "../i18n";
 
 export function addSessionMutationOptions() {
   return mutationOptions({

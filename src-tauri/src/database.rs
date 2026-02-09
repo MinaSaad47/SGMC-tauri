@@ -1,9 +1,6 @@
-use std::sync::LazyLock;
-
 use tauri::plugin::TauriPlugin;
+use tauri::Runtime;
 use tauri_plugin_sql::{Migration, MigrationKind};
-
-use crate::filesystem;
 
 fn db_migrations() -> Vec<Migration> {
     vec![
@@ -130,35 +127,33 @@ fn db_migrations() -> Vec<Migration> {
             CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients (phone);
         "#,
         },
+        Migration {
+            version: 5,
+            kind: MigrationKind::Up,
+            description: "create_attachments_table",
+            sql: r#"
+            CREATE TABLE IF NOT EXISTS attachments (
+                id TEXT PRIMARY KEY,
+                statement_id TEXT NOT NULL,
+                file_name TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                file_type TEXT NOT NULL,
+                file_size INTEGER NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(statement_id) REFERENCES statements(id) ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_attachments_statement_id ON attachments (statement_id);
+        "#,
+        },
     ]
 }
 
-pub static DB_PATH: LazyLock<String> = LazyLock::new(|| {
-    filesystem::DATA_DIR
-        .join("database.db")
-        .display()
-        .to_string()
-});
-
-pub static DB_URL: LazyLock<String> = LazyLock::new(|| format!("sqlite:{}", *DB_PATH));
-
-pub fn get_db_plugin<R>() -> TauriPlugin<R, Option<tauri_plugin_sql::PluginConfig>>
+pub fn get_db_plugin<R>(db_url: &str) -> TauriPlugin<R, Option<tauri_plugin_sql::PluginConfig>>
 where
-    R: tauri::Runtime,
+    R: Runtime,
 {
     tauri_plugin_sql::Builder::new()
-        .add_migrations(&DB_URL, db_migrations())
+        .add_migrations(db_url, db_migrations())
         .build()
-}
-
-/// Tauri command to get the database URL
-#[tauri::command]
-pub fn get_db_url() -> String {
-    DB_URL.clone()
-}
-
-/// Tauri command to get the database path
-#[tauri::command]
-pub fn get_db_path() -> String {
-    DB_PATH.clone()
 }

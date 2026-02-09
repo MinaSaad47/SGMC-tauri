@@ -4,6 +4,7 @@ import { Session } from "./sessions";
 import { Payment } from "./payments";
 import { Doctor } from "./doctors";
 import { Clinic } from "./clinics";
+import { Attachment } from "./attachments";
 
 export interface Statement {
   id: string;
@@ -37,4 +38,5 @@ export type UpdateStatementSchema = z.infer<typeof UpdateStatementSchema>;
 export interface StatementDetails extends Statement {
   sessions: Session[];
   payments: Payment[];
+  attachments: Attachment[];
 }

@@ -1,8 +1,8 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { v7 as uuid } from "uuid";
-import { getDb } from "../db";
-import { AddDoctorSchema, Doctor, UpdateDoctorSchema } from "../types/doctors";
+import { getDb } from "../database";
 import i18n from "../i18n";
+import { AddDoctorSchema, Doctor, UpdateDoctorSchema } from "../types/doctors";
 
 export function getDoctorsQueryKey() {
   return ["doctors"] as const;

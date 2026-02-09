@@ -1,7 +1,7 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { debug } from "@tauri-apps/plugin-log";
 import { v7 as uuid } from "uuid";
-import { getDb } from "../db";
+import { getDb } from "../database";
 import i18n from "../i18n";
 import { PagedList, PagingParams } from "../types";
 import { AddPaymentSchema } from "../types/payments";
@@ -170,6 +170,23 @@ async function getStatementDetails(id: string) {
             ) as payments
         FROM (SELECT * FROM payments ORDER BY created_at DESC)
         GROUP BY statement_id
+      ),
+      statement_attachments AS (
+        SELECT
+            statement_id,
+            json_group_array(
+                json_object(
+                    'id', id,
+                    'statementId', statement_id,
+                    'fileName', file_name,
+                    'filePath', file_path,
+                    'fileType', file_type,
+                    'fileSize', file_size,
+                    'createdAt', created_at
+                )
+            ) as attachments
+        FROM (SELECT * FROM attachments ORDER BY created_at DESC)
+        GROUP BY statement_id
       )
       SELECT
           s.id,
@@ -203,13 +220,15 @@ async function getStatementDetails(id: string) {
           COALESCE(sp.totalPaid, 0) as totalPaid,
           (s.total - COALESCE(sp.totalPaid, 0)) as totalRemaining,
           COALESCE(ss.sessions, '[]') as sessions,
-          COALESCE(sp.payments, '[]') as payments
+          COALESCE(sp.payments, '[]') as payments,
+          COALESCE(sa.attachments, '[]') as attachments
       FROM statements s
       JOIN patients p ON s.patient_id = p.id
       LEFT JOIN doctors d ON s.doctor_id = d.id
       LEFT JOIN clinics c ON s.clinic_id = c.id
       LEFT JOIN statement_sessions ss ON s.id = ss.statement_id
       LEFT JOIN statement_payments sp ON s.id = sp.statement_id
+      LEFT JOIN statement_attachments sa ON s.id = sa.statement_id
       WHERE s.id = ?
     `,
     [id],
@@ -226,7 +245,8 @@ async function getStatementDetails(id: string) {
     clinic: statement.clinic ? JSON.parse(statement.clinic) : undefined,
     payments: statement.payments && JSON.parse(statement.payments),
     sessions: statement.sessions && JSON.parse(statement.sessions),
-  } satisfies StatementDetails;
+    attachments: statement.attachments && JSON.parse(statement.attachments),
+  } as StatementDetails;
 }
 
 export function getStatementDetailsQueryOptions(id: string) {

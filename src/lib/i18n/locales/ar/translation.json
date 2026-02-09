@@ -33,6 +33,7 @@
     "error": "خطأ",
     "print": "طباعة",
     "file": "ملف",
+    "attachment": "مرفق",
     "load_more": "تحميل المزيد",
     "management": "الإدارة",
     "all": "الكل",
@@ -134,7 +135,28 @@
     "doctor_deleted": "تم حذف الطبيب بنجاح",
     "doctor_deleted_failed": "فشل في حذف الطبيب",
     "clinic_deleted": "تم حذف العيادة بنجاح",
-    "clinic_deleted_failed": "فشل في حذف العيادة"
+    "clinic_deleted_failed": "فشل في حذف العيادة",
+    "attachment_added": "تم إضافة المرفق بنجاح",
+    "attachment_deleted": "تم حذف المرفق بنجاح"
+  },
+  "scanner": {
+    "title": "مسح مستند",
+    "instruction": "امسح رمز QR هذا بهاتفك لرفع صورة مباشرة من الكاميرا.",
+    "edit_image": "تعديل الصورة",
+    "zoom": "تكبير",
+    "rotate": "تدوير",
+    "scan_now": "مسح مستند",
+    "upload_manual": "رفع من الكمبيوتر",
+    "bw_filter": "وضع المسح الضوئي",
+    "bw_desc": "محسن لنصوص المستندات. يزيل ظلال الورق ويبرز الحبر.",
+    "edit_hint": "اضبط الزوايا للقص وتطبيق المرشحات",
+    "drag_hint": "اسحب الزوايا لتغيير الحجم • اسحب المركز للتحريك",
+    "aspect": "شكل القص",
+    "free": "شكل حر"
+  },
+  "attachments": {
+    "title": "المرفقات",
+    "no_attachments": "لا توجد مستندات مرفقة بهذا الكشف."
   },
   "patients": {
     "title": "المرضى",

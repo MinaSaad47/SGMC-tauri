@@ -1,18 +1,21 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getStatementDetailsQueryOptions, deleteStatementMutationOptions } from "@/lib/tanstack-query/statements";
+import { addAttachmentMutationOptions } from "@/lib/tanstack-query/attachments";
 import { LoadingMessage } from "@/components/table-loading";
 import { ErrorMessage } from "@/components/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, User, Phone, Pencil, Printer, Stethoscope, Building2, Trash } from "lucide-react";
+import { Plus, User, Phone, Pencil, Printer, Stethoscope, Building2, Trash, Camera } from "lucide-react";
 import { NewPaymentForm } from "./components/new-payment-form";
 import { UpdateStatementForm } from "./components/update-statement-form";
-import { PrintableStatement } from "./components/printable-statement";
-import { useReactToPrint } from "react-to-print";
+import { PrintPreview } from "./components/print-preview";
 import { RestrictiveDeleteDialog } from "@/components/restrictive-delete-dialog";
+import { ScannerModal } from "@/components/scanner-modal";
+import { ImageEditorModal } from "@/components/image-editor-modal";
+import { AttachmentsList } from "./components/attachments-list";
 import {
   Dialog,
   DialogContent,
@@ -29,12 +32,15 @@ function StatementDetailsPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
+  // Modals state
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
-
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [editingImageData, setEditingImageData] = useState<string | null>(null);
+  
   const statementDetails = useQuery(getStatementDetailsQueryOptions(id!));
 
   const deleteMutation = useMutation({
@@ -42,9 +48,8 @@ function StatementDetailsPage() {
     onSuccess: () => navigate("/statements"),
   });
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Statement-${id}`,
+  const addAttachmentMutation = useMutation({
+    ...addAttachmentMutationOptions(),
   });
 
   if (deleteMutation.isSuccess) return null;
@@ -70,6 +75,20 @@ function StatementDetailsPage() {
         ? "Partial"
         : "Unpaid";
 
+  const handleScanReceived = (data: { mime: string; data: string }) => {
+    setEditingImageData(data.data);
+  };
+
+  const handleSaveAttachment = (processedBase64: string) => {
+    addAttachmentMutation.mutate({
+      statementId: statement.id,
+      fileData: processedBase64,
+      fileName: `scan_${Date.now()}.jpg`,
+      fileType: "image/jpeg",
+    });
+    setEditingImageData(null);
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Top Section: Header & Main Info */}
@@ -85,6 +104,11 @@ function StatementDetailsPage() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsScannerOpen(true)}>
+              <Camera className="h-4 w-4" />
+              {t("scanner.scan_now")}
+            </Button>
+
             {/* Edit Button */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
               <DialogTrigger asChild>
@@ -111,32 +135,10 @@ function StatementDetailsPage() {
             </Dialog>
 
             {/* Print Button */}
-            <Dialog open={isPrintPreviewOpen} onOpenChange={setIsPrintPreviewOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Printer className="h-4 w-4" />
-                  {t("common.print")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="min-w-[90vw] h-[90vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-6 pb-2 shrink-0">
-                  <DialogTitle>
-                    {t("common.print")} {t("statements.details_title")}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 overflow-auto bg-gray-100 p-8 flex justify-center">
-                  <div className="shadow-lg origin-top scale-[0.6] sm:scale-[0.7] md:scale-[0.8]">
-                    <PrintableStatement ref={printRef} statement={statement} />
-                  </div>
-                </div>
-                <div className="p-4 border-t flex justify-end shrink-0 bg-background">
-                  <Button onClick={() => handlePrint()} className="w-full sm:w-auto">
-                    <Printer className="me-2 h-4 w-4" />
-                    {t("common.print")}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsPrintPreviewOpen(true)}>
+              <Printer className="h-4 w-4" />
+              {t("common.print")}
+            </Button>
 
             <Link to={`/patients/${statement.patient.id}`}>
               <Button variant="outline" size="sm" className="gap-2">
@@ -183,8 +185,25 @@ function StatementDetailsPage() {
         )}
       </Card>
 
+      {/* Attachments Section */}
+      <Card className="border shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="h-5 w-5 text-muted-foreground" />
+            {t("attachments.title")}
+          </CardTitle>
+          <Button variant="ghost" size="sm" onClick={() => setIsScannerOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t("common.add")}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <AttachmentsList statementId={statement.id} attachments={statement.attachments} />
+        </CardContent>
+      </Card>
+
       {/* Financial Summary */}
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader>
           <CardTitle>{t("financial.summary")}</CardTitle>
         </CardHeader>
@@ -227,7 +246,7 @@ function StatementDetailsPage() {
       </Card>
 
       {/* Sessions List */}
-      <Card>
+      <Card className="border shadow-sm">
         <CardContent className="pt-6">
           <SessionsList
             statementId={statement.id}
@@ -237,7 +256,7 @@ function StatementDetailsPage() {
       </Card>
 
       {/* Payments List */}
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t("common.payment_history")}</CardTitle>
           <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
@@ -277,6 +296,28 @@ function StatementDetailsPage() {
         description={`${t("common.cannot_be_undone")} ${t("statements.delete_warning")}`}
         entityName={t("statements.statement_for", { name: statement.patient.name })}
         isPending={deleteMutation.isPending}
+      />
+
+      <ScannerModal 
+        isOpen={isScannerOpen} 
+        onOpenChange={setIsScannerOpen}
+        onScanReceived={handleScanReceived}
+      />
+
+      {editingImageData && (
+        <ImageEditorModal
+          isOpen={true}
+          onOpenChange={(open) => !open && setEditingImageData(null)}
+          imageData={editingImageData}
+          onSave={handleSaveAttachment}
+        />
+      )}
+
+      {/* New Print Preview Component */}
+      <PrintPreview 
+        isOpen={isPrintPreviewOpen} 
+        onOpenChange={setIsPrintPreviewOpen}
+        statement={statement}
       />
     </div>
   );

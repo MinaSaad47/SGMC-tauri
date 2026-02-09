@@ -1,8 +1,8 @@
+import { getAppConfig } from "@/lib/config/app";
 import { googleDrive } from "@/lib/google-drive";
 import { useSyncStore } from "@/lib/sync-store";
 import { uploadBackupMutationOptions } from "@/lib/tanstack-query/drive";
 import { useMutation } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
 import { error } from "@tauri-apps/plugin-log";
 import { useEffect, useRef, useState } from "react";
 
@@ -25,8 +25,7 @@ export function useAutoSync()
   useEffect(() =>
   {
     // Fetch runtime interval from Rust
-    invoke<number>("get_sync_interval_minutes")
-      .then((minutes) => setSyncIntervalMinutes(minutes))
+    getAppConfig().then((config) => setSyncIntervalMinutes(config.sync_interval_minutes))
       .catch((err) => error("Failed to get sync interval:", err));
   }, []);
 

@@ -1,5 +1,5 @@
-import { mutationOptions, infiniteQueryOptions } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
+import { getAppConfig } from "@/lib/config/app";
+import { infiniteQueryOptions, mutationOptions } from "@tanstack/react-query";
 import { rename, writeFile } from "@tauri-apps/plugin-fs";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { toast } from "sonner";
@@ -57,7 +57,8 @@ export function restoreBackupMutationOptions()
     mutationFn: async (fileId: string) =>
     {
       const data = await googleDrive.downloadBackup(fileId);
-      const dbPath = await invoke<string>("get_db_path");
+      const config = await getAppConfig();
+      const dbPath = config.db_url;
       const tempPath = `${dbPath}.tmp`;
 
       // 1. Write to temp file

@@ -33,6 +33,7 @@
     "error": "Error",
     "print": "Print",
     "file": "File",
+    "attachment": "Attachment",
     "load_more": "Load More",
     "management": "Management",
     "all": "All",
@@ -136,7 +137,28 @@
     "doctor_deleted": "Doctor deleted successfully",
     "doctor_deleted_failed": "Failed to delete doctor",
     "clinic_deleted": "Clinic deleted successfully",
-    "clinic_deleted_failed": "Failed to delete clinic"
+    "clinic_deleted_failed": "Failed to delete clinic",
+    "attachment_added": "Attachment added successfully",
+    "attachment_deleted": "Attachment deleted successfully"
+  },
+  "scanner": {
+    "title": "Scan Document",
+    "instruction": "Scan this QR code with your phone to upload a photo directly from your camera.",
+    "edit_image": "Edit Scan",
+    "zoom": "Zoom",
+    "rotate": "Rotation",
+    "scan_now": "Scan Document",
+    "upload_manual": "Upload from Computer",
+    "bw_filter": "B&W Scan Mode",
+    "bw_desc": "Optimized for document text. Removes paper shadows and highlights ink.",
+    "edit_hint": "Adjust corners to crop and apply filters",
+    "drag_hint": "Drag corners to resize • Drag center to move",
+    "aspect": "Crop Shape",
+    "free": "Free Form"
+  },
+  "attachments": {
+    "title": "Attachments",
+    "no_attachments": "No documents attached to this statement."
   },
   "patients": {
     "title": "Patients",
