@@ -15,5 +15,12 @@ pub struct AppConfig {
 
 #[tauri::command]
 pub fn get_app_config(state: State<'_, AppState>) -> AppConfig {
-    state.config.clone()
+    let mut config = state.config.clone();
+
+    // Dynamically update IP address if possible
+    if let Ok(ip) = local_ip_address::local_ip() {
+        config.ip_address = ip.to_string();
+    }
+
+    config
 }
