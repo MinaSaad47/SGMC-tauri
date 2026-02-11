@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Multipart, Query, State},
+    extract::{DefaultBodyLimit, Multipart, Query, State},
     http::StatusCode,
     response::{Html, IntoResponse},
     routing::{get, post},
@@ -26,7 +26,8 @@ pub async fn start_server(app: AppHandle) -> u16 {
         .route("/scan", get(get_scan_page))
         .route("/upload", post(handle_upload))
         .route("/oauth/callback", get(handle_oauth))
-        .with_state(app_state);
+        .with_state(app_state)
+        .layer(DefaultBodyLimit::disable());
 
     let port = app.state::<AppState>().config.port;
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port))
@@ -134,6 +135,7 @@ async fn get_scan_page() -> Html<&'static str> {
             status.style.color = "#fbbf24"; // yellow
             progressContainer.style.display = 'block';
             progressBar.style.width = '0%';
+            progressBar.style.background = "var(--primary)";
             controls.style.opacity = '0.5';
             controls.style.pointerEvents = 'none';
 
@@ -156,17 +158,18 @@ async fn get_scan_page() -> Html<&'static str> {
                     mainView.style.display = 'none';
                     successView.style.display = 'flex';
                 } else {
-                    handleError();
+                    const serverMessage = xhr.responseText ? xhr.responseText.trim() : "";
+                    handleError(serverMessage || `Upload failed (status ${xhr.status || "unknown"})`);
                 }
             });
 
-            xhr.addEventListener("error", handleError);
+            xhr.addEventListener("error", () => handleError("Network error while uploading"));
             xhr.open("POST", "/upload");
             xhr.send(fd);
         };
 
-        const handleError = () => {
-            status.innerText = "❌ Upload Failed";
+        const handleError = (message = "Upload failed") => {
+            status.innerText = `❌ ${message}`;
             status.style.color = "var(--error)";
             progressBar.style.background = "var(--error)";
             controls.style.opacity = '1';
@@ -184,27 +187,61 @@ async fn get_scan_page() -> Html<&'static str> {
 
 async fn handle_upload(
     State(app): State<ServerState>,
-    mut multipart: Multipart,
+    multipart: Multipart,
 ) -> impl IntoResponse {
-    while let Ok(Some(field)) = multipart.next_field().await {
-        if field.name() == Some("file") {
-            let content_type = field.content_type().unwrap_or("image/jpeg").to_string();
+    match process_upload(&app, multipart).await {
+        Ok(_) => (StatusCode::OK, "Uploaded".to_string()),
+        Err((status, message)) => (status, message),
+    }
+}
 
-            if let Ok(bytes) = field.bytes().await {
-                let base64_string = base64::engine::general_purpose::STANDARD.encode(&bytes);
-
-                let payload = serde_json::json!({
-                    "mime": content_type,
-                    "data": base64_string
-                });
-
-                let _ = app.emit("scan-received", payload);
-                return (StatusCode::OK, "Uploaded");
-            }
+async fn process_upload(
+    app: &AppHandle,
+    mut multipart: Multipart,
+) -> Result<(), (StatusCode, String)> {
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::BAD_REQUEST,
+                format!("Failed to read multipart data: {err}"),
+            )
+        })?
+    {
+        if field.name() != Some("file") {
+            continue;
         }
+
+        let content_type = field.content_type().unwrap_or("image/jpeg").to_string();
+        let bytes = field.bytes().await.map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to read file bytes: {err}"),
+            )
+        })?;
+
+        let base64_string = base64::engine::general_purpose::STANDARD.encode(&bytes);
+
+        let payload = serde_json::json!({
+            "mime": content_type,
+            "data": base64_string,
+        });
+
+        app.emit("scan-received", payload).map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to notify application: {err}"),
+            )
+        })?;
+
+        return Ok(());
     }
 
-    (StatusCode::BAD_REQUEST, "No file found")
+    Err((
+        StatusCode::BAD_REQUEST,
+        "No file field found in upload".to_string(),
+    ))
 }
 
 async fn handle_oauth(
