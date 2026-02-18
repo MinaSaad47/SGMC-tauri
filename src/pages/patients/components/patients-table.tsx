@@ -97,14 +97,6 @@ export function PatientsTable() {
     [t],
   );
 
-  if (patients.isPending) {
-    return <LoadingMessage message={t("patients.loading")} />;
-  }
-
-  if (patients.isError) {
-    return <ErrorMessage error={patients.error} />;
-  }
-
   return (
     <div className="relative h-full w-full">
       <Input
@@ -114,12 +106,18 @@ export function PatientsTable() {
         className="mb-4 max-w-sm"
       />
 
-      <DataTable
-        columns={columns}
-        pagination={pagination}
-        setPagination={setPagination}
-        data={patients.data.items}
-      />
+      {patients.isPending && <LoadingMessage message={t("patients.loading")} />}
+
+      {patients.isError && <ErrorMessage error={patients.error} />}
+
+      {patients.data && (
+        <DataTable
+          columns={columns}
+          pagination={pagination}
+          setPagination={setPagination}
+          data={patients.data.items}
+        />
+      )}
     </div>
   );
 }

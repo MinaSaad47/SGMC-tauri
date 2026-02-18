@@ -182,14 +182,6 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
     return allColumns;
   }, [patientId, t]);
 
-  if (statementsQuery.isPending) {
-    return <LoadingMessage message={t("statements.loading")} />;
-  }
-
-  if (statementsQuery.isError) {
-    return <ErrorMessage error={statementsQuery.error} />;
-  }
-
   return (
     <div className="relative h-full w-full">
       <div className="flex flex-col gap-4 mb-4">
@@ -267,15 +259,22 @@ export function StatementsTable({ patientId }: StatementsTableProps) {
           </div>
         </div>
       </div>
-      <DataTable
-        columns={columns}
-        pagination={pagination}
-        setPagination={setPagination}
-        data={statementsQuery.data.items}
-        pageCount={Math.ceil(
-          statementsQuery.data.pagingInfo.total / pagination.pageSize,
-        )}
-      />
+
+      {statementsQuery.isPending && <LoadingMessage message={t("statements.loading")} />}
+
+      {statementsQuery.isError && <ErrorMessage error={statementsQuery.error} />}
+
+      {statementsQuery.data && (
+        <DataTable
+          columns={columns}
+          pagination={pagination}
+          setPagination={setPagination}
+          data={statementsQuery.data.items}
+          pageCount={Math.ceil(
+            statementsQuery.data.pagingInfo.total / pagination.pageSize,
+          )}
+        />
+      )}
     </div>
   );
 }
